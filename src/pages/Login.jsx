@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 
 /**
  * Página de inicio de sesión del Admin.
- * Usa VITE_API_URL o http://localhost:3000/api por defecto.
+ * Usa VITE_API_URL o https://flores-backend-px2c.onrender.com/api por defecto.
  */
 export default function Login() {
   const [username, setUsername] = useState('');   // admin
@@ -15,7 +15,7 @@ export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const API = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+  const API = import.meta.env.VITE_API_URL || 'https://flores-backend-px2c.onrender.com/api';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
