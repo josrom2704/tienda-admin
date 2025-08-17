@@ -3,6 +3,8 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getAxiosInstance } from '../api';
 import { testApiConnection, testProductCreation } from '../utils/apiTest';
+import { debugImageUpload, testWithGeneratedImage } from '../utils/debugImage';
+import { simpleImageTest } from '../utils/simpleImageTest';
 
 /**
  * Formulario para crear o editar un arreglo/producto. Recibe un parámetro
@@ -157,6 +159,62 @@ export default function ProductForm() {
     }
   };
 
+  const handleTestGeneratedImage = async () => {
+    setTesting(true);
+    setError('');
+    
+    try {
+      console.log('🎨 Probando con imagen generada...');
+      
+      const testResult = await testWithGeneratedImage(token);
+      
+      if (!testResult.success) {
+        setError('Error creando imagen de prueba');
+        return;
+      }
+      
+      // Intentar subir la imagen generada
+      const axiosInstance = getAxiosInstance(token);
+      
+      console.log('🚀 Enviando imagen generada al servidor...');
+      
+      const response = await axiosInstance.post('/flores', testResult.formData, {
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json'
+        },
+        timeout: 30000,
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity
+      });
+      
+      console.log('✅ Imagen generada subida exitosamente:', response.data);
+      setError('');
+      alert('✅ Prueba con imagen generada exitosa! La API funciona correctamente.');
+      
+    } catch (error) {
+      console.error('❌ Error al subir imagen generada:', error);
+      
+      const errorMessage = error.response?.data?.message || error.message;
+      setError(`❌ Error en prueba con imagen generada: ${errorMessage}`);
+      
+      // Log detallado del error
+      console.error('📊 Detalles del error:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          headers: error.config?.headers
+        }
+      });
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -196,19 +254,8 @@ export default function ProductForm() {
       console.log('ℹ️ No hay imagen para enviar');
     }
     
-    // Log detallado del FormData
-    console.log('📋 FormData completo:');
-    for (let [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        console.log(`  📁 ${key}:`, {
-          name: value.name,
-          type: value.type,
-          size: (value.size / 1024 / 1024).toFixed(2) + 'MB'
-        });
-      } else {
-        console.log(`  📝 ${key}:`, value);
-      }
-    }
+    // Diagnóstico completo de la imagen
+    debugImageUpload(formData, token);
     
     try {
       const axiosInstance = getAxiosInstance(token);
@@ -308,6 +355,37 @@ export default function ProductForm() {
               >
                 {testing ? '🖼️ Probando...' : '🖼️ Probar Imagen'}
               </button>
+              
+              <button
+                type="button"
+                onClick={handleTestGeneratedImage}
+                disabled={testing}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                title="Probar con imagen generada automáticamente"
+              >
+                {testing ? '🎨 Probando...' : '🎨 Imagen Generada'}
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => simpleImageTest(token)}
+                disabled={testing}
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50"
+                title="Prueba simple con fetch nativo"
+              >
+                🚀 Prueba Simple
+              </button>
+            </div>
+          </div>
+          
+          {/* Información adicional de debug */}
+          <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+            <h4 className="font-medium text-blue-800 mb-2">🔍 Información de Debug:</h4>
+            <div className="text-sm text-blue-700 space-y-1">
+              <p>• Token válido: {token ? '✅ Sí' : '❌ No'}</p>
+              <p>• Imagen seleccionada: {form.imagen ? `✅ ${form.imagen.name}` : '❌ No'}</p>
+              <p>• Floristería: {form.floristeria || '❌ No seleccionada'}</p>
+              <p>• URL API: {import.meta.env.VITE_API_URL || 'https://flores-backend-px2c.onrender.com/api'}</p>
             </div>
           </div>
           
