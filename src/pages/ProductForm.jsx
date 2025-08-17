@@ -5,6 +5,7 @@ import { getAxiosInstance } from '../api';
 import { testApiConnection, testProductCreation } from '../utils/apiTest';
 import { debugImageUpload, testWithGeneratedImage } from '../utils/debugImage';
 import { simpleImageTest } from '../utils/simpleImageTest';
+import { healthCheck } from '../utils/healthCheck';
 
 /**
  * Formulario para crear o editar un arreglo/producto. Recibe un parámetro
@@ -215,6 +216,32 @@ export default function ProductForm() {
     }
   };
 
+  const handleHealthCheck = async () => {
+    setTesting(true);
+    setError('');
+    
+    try {
+      console.log('🏥 Iniciando verificación de salud del backend...');
+      
+      const results = await healthCheck();
+      
+      if (results.success) {
+        console.log('✅ Verificación de salud completada:', results);
+        setError('');
+        alert('✅ Verificación de salud completada. Revisa la consola para detalles.');
+      } else {
+        console.error('❌ Error en verificación de salud:', results.error);
+        setError('Error en la verificación de salud');
+      }
+      
+    } catch (error) {
+      console.error('❌ Error inesperado en verificación de salud:', error);
+      setError('Error inesperado en la verificación de salud');
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -374,6 +401,16 @@ export default function ProductForm() {
                 title="Prueba simple con fetch nativo"
               >
                 🚀 Prueba Simple
+              </button>
+              
+              <button
+                type="button"
+                onClick={handleHealthCheck}
+                disabled={testing}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                title="Verificar salud del backend"
+              >
+                🏥 Salud Backend
               </button>
             </div>
           </div>
