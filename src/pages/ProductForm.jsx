@@ -6,6 +6,8 @@ import { testApiConnection, testProductCreation } from '../utils/apiTest';
 import { debugImageUpload, testWithGeneratedImage } from '../utils/debugImage';
 import { simpleImageTest } from '../utils/simpleImageTest';
 import { healthCheck } from '../utils/healthCheck';
+import { testBackendSimple, testPostVariations, testFormData } from '../utils/backendTest';
+import { minimalTest, testMongoConnection } from '../utils/minimalTest';
 
 /**
  * Formulario para crear o editar un arreglo/producto. Recibe un parámetro
@@ -242,6 +244,101 @@ export default function ProductForm() {
     }
   };
 
+  const handleBackendTest = async () => {
+    setTesting(true);
+    setError('');
+    
+    try {
+      console.log('🧪 Iniciando pruebas del backend...');
+      
+      await testBackendSimple();
+      setError('');
+      alert('✅ Pruebas del backend completadas. Revisa la consola para detalles.');
+      
+    } catch (error) {
+      console.error('❌ Error en pruebas del backend:', error);
+      setError('Error en las pruebas del backend');
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const handlePostVariations = async () => {
+    setTesting(true);
+    setError('');
+    
+    try {
+      console.log('🧪 Iniciando pruebas de POST con variaciones...');
+      
+      await testPostVariations();
+      setError('');
+      alert('✅ Pruebas de POST completadas. Revisa la consola para detalles.');
+      
+    } catch (error) {
+      console.error('❌ Error en pruebas de POST:', error);
+      setError('Error en las pruebas de POST');
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const handleFormDataTest = async () => {
+    setTesting(true);
+    setError('');
+    
+    try {
+      console.log('🧪 Iniciando prueba con FormData...');
+      
+      await testFormData();
+      setError('');
+      alert('✅ Prueba con FormData completada. Revisa la consola para detalles.');
+      
+    } catch (error) {
+      console.error('❌ Error en prueba con FormData:', error);
+      setError('Error en la prueba con FormData');
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const handleMinimalTest = async () => {
+    setTesting(true);
+    setError('');
+    
+    try {
+      console.log('🧪 Iniciando test mínimo...');
+      
+      await minimalTest();
+      setError('');
+      alert('✅ Test mínimo completado. Revisa la consola para detalles.');
+      
+    } catch (error) {
+      console.error('❌ Error en test mínimo:', error);
+      setError('Error en el test mínimo');
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const handleMongoTest = async () => {
+    setTesting(true);
+    setError('');
+    
+    try {
+      console.log('🗄️ Iniciando test de MongoDB...');
+      
+      await testMongoConnection();
+      setError('');
+      alert('✅ Test de MongoDB completado. Revisa la consola para detalles.');
+      
+    } catch (error) {
+      console.error('❌ Error en test de MongoDB:', error);
+      setError('Error en el test de MongoDB');
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -411,6 +508,56 @@ export default function ProductForm() {
                 title="Verificar salud del backend"
               >
                 🏥 Salud Backend
+              </button>
+              
+              <button
+                type="button"
+                onClick={handleBackendTest}
+                disabled={testing}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                title="Pruebas básicas del backend"
+              >
+                🧪 Backend Test
+              </button>
+              
+              <button
+                type="button"
+                onClick={handlePostVariations}
+                disabled={testing}
+                className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50"
+                title="Probar POST con diferentes datos"
+              >
+                📊 POST Test
+              </button>
+              
+              <button
+                type="button"
+                onClick={handleFormDataTest}
+                disabled={testing}
+                className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50"
+                title="Probar con FormData simple"
+              >
+                📁 FormData Test
+              </button>
+              
+              <button
+                type="button"
+                onClick={handleMinimalTest}
+                disabled={testing}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                title="Test mínimo para error 500"
+              >
+                🎯 Test Mínimo
+              </button>
+              
+              <button
+                type="button"
+                onClick={handleMongoTest}
+                disabled={testing}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                title="Test de conexión MongoDB"
+              >
+                🗄️ MongoDB Test
               </button>
             </div>
           </div>
