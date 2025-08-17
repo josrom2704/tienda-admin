@@ -56,8 +56,36 @@ export default function ProductForm() {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
+    
     if (files) {
-      setForm({ ...form, [name]: files[0] });
+      const file = files[0];
+      
+      // Validación de imagen
+      if (name === 'imagen') {
+        // Verificar tipo de archivo
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+          setError('Solo se permiten archivos de imagen (JPEG, PNG, GIF, WebP)');
+          return;
+        }
+        
+        // Verificar tamaño (5MB máximo)
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+          setError('La imagen debe ser menor a 5MB');
+          return;
+        }
+        
+        console.log('🖼️ Imagen válida seleccionada:', {
+          name: file.name,
+          type: file.type,
+          size: (file.size / 1024 / 1024).toFixed(2) + 'MB'
+        });
+        
+        setError(''); // Limpiar errores previos
+      }
+      
+      setForm({ ...form, [name]: file });
     } else {
       setForm({ ...form, [name]: value });
     }
@@ -88,6 +116,47 @@ export default function ProductForm() {
     }
   };
 
+  const handleTestImageUpload = async () => {
+    if (!form.imagen) {
+      setError('Primero selecciona una imagen para probar');
+      return;
+    }
+    
+    setTesting(true);
+    setError('');
+    
+    try {
+      console.log('🧪 Probando subida de imagen...');
+      
+      const testData = {
+        nombre: 'TEST_IMAGEN',
+        descripcion: 'Prueba de subida de imagen',
+        precio: '1.00',
+        stock: '1',
+        categoria: 'Flores',
+        floristeria: form.floristeria || 'test',
+        imagen: form.imagen
+      };
+      
+      const results = await testProductCreation(token, testData);
+      
+      if (results.success) {
+        setError('');
+        alert('✅ Prueba de imagen exitosa! La imagen se subió correctamente.');
+        console.log('✅ Imagen subida exitosamente:', results.data);
+      } else {
+        setError(`❌ Error en prueba de imagen: ${results.error.message}`);
+        console.error('❌ Error al subir imagen de prueba:', results.error);
+      }
+      
+    } catch (error) {
+      console.error('❌ Error inesperado en prueba de imagen:', error);
+      setError('Error inesperado en la prueba de imagen');
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -104,20 +173,41 @@ export default function ProductForm() {
     console.log('📋 Datos del formulario:', form);
     
     const formData = new FormData();
+    
+    // Agregar campos básicos
     formData.append('nombre', form.nombre);
     formData.append('descripcion', form.descripcion);
     formData.append('precio', form.precio);
     formData.append('stock', form.stock);
     formData.append('categoria', form.categoria);
     formData.append('floristeria', form.floristeria);
+    
+    // Agregar imagen si existe
     if (form.imagen) {
-      formData.append('imagen', form.imagen);
-      console.log('🖼️ Imagen adjuntada:', form.imagen.name);
+      console.log('🖼️ Preparando imagen para envío:', {
+        name: form.imagen.name,
+        type: form.imagen.type,
+        size: (form.imagen.size / 1024 / 1024).toFixed(2) + 'MB'
+      });
+      
+      formData.append('imagen', form.imagen, form.imagen.name);
+      console.log('✅ Imagen agregada al FormData');
+    } else {
+      console.log('ℹ️ No hay imagen para enviar');
     }
     
-    // Log del FormData
+    // Log detallado del FormData
+    console.log('📋 FormData completo:');
     for (let [key, value] of formData.entries()) {
-      console.log(`📝 ${key}:`, value);
+      if (value instanceof File) {
+        console.log(`  📁 ${key}:`, {
+          name: value.name,
+          type: value.type,
+          size: (value.size / 1024 / 1024).toFixed(2) + 'MB'
+        });
+      } else {
+        console.log(`  📝 ${key}:`, value);
+      }
     }
     
     try {
@@ -128,13 +218,25 @@ export default function ProductForm() {
       if (id) {
         console.log('✏️ Actualizando producto existente...');
         await axiosInstance.put(`/flores/${id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json'
+          },
+          timeout: 30000, // 30 segundos de timeout
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity
         });
         console.log('✅ Producto actualizado exitosamente');
       } else {
         console.log('➕ Creando nuevo producto...');
         const response = await axiosInstance.post('/flores', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json'
+          },
+          timeout: 30000, // 30 segundos de timeout
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity
         });
         console.log('✅ Producto creado exitosamente:', response.data);
       }
@@ -187,14 +289,26 @@ export default function ProductForm() {
               <h3 className="font-semibold text-blue-800 mb-1">🔧 Diagnóstico de API</h3>
               <p className="text-blue-600 text-sm">Prueba la conexión antes de enviar el formulario</p>
             </div>
-            <button
-              type="button"
-              onClick={handleTestApi}
-              disabled={testing}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-            >
-              {testing ? '🧪 Probando...' : '🧪 Probar API'}
-            </button>
+            <div className="flex space-x-2">
+              <button
+                type="button"
+                onClick={handleTestApi}
+                disabled={testing}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {testing ? '🧪 Probando...' : '🧪 Probar API'}
+              </button>
+              
+              <button
+                type="button"
+                onClick={handleTestImageUpload}
+                disabled={testing || !form.imagen}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                title={!form.imagen ? 'Selecciona una imagen primero' : 'Probar subida de imagen'}
+              >
+                {testing ? '🖼️ Probando...' : '🖼️ Probar Imagen'}
+              </button>
+            </div>
           </div>
           
           {/* Resultados de la prueba */}
@@ -330,7 +444,11 @@ export default function ProductForm() {
         
         <div>
           <label className="block text-gray-700 font-semibold mb-2">Imagen del Arreglo</label>
-          <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-purple-400 transition-colors duration-200">
+          <div className={`border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 ${
+            form.imagen 
+              ? 'border-green-400 bg-green-50' 
+              : 'border-gray-300 hover:border-purple-400'
+          }`}>
             <input
               type="file"
               name="imagen"
@@ -340,13 +458,47 @@ export default function ProductForm() {
               id="imagen-input"
             />
             <label htmlFor="imagen-input" className="cursor-pointer">
-              <div className="text-4xl mb-2">📸</div>
-              <p className="text-gray-600 mb-2">
-                {form.imagen ? `Imagen seleccionada: ${form.imagen.name}` : 'Haz clic para seleccionar una imagen'}
-              </p>
-              <p className="text-sm text-gray-500">PNG, JPG, GIF hasta 5MB</p>
+              <div className="text-4xl mb-2">
+                {form.imagen ? '🖼️' : '📸'}
+              </div>
+              
+              {form.imagen ? (
+                <div className="space-y-2">
+                  <p className="text-green-700 font-medium">
+                    ✅ Imagen seleccionada
+                  </p>
+                  <p className="text-green-600 text-sm">
+                    {form.imagen.name}
+                  </p>
+                  <p className="text-green-500 text-xs">
+                    {(form.imagen.size / 1024 / 1024).toFixed(2)} MB • {form.imagen.type}
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-gray-600 mb-2">
+                    Haz clic para seleccionar una imagen
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    PNG, JPG, GIF, WebP hasta 5MB
+                  </p>
+                </div>
+              )}
             </label>
           </div>
+          
+          {/* Botón para quitar imagen */}
+          {form.imagen && (
+            <div className="mt-3 text-center">
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, imagen: null })}
+                className="text-red-600 hover:text-red-800 text-sm underline"
+              >
+                🗑️ Quitar imagen
+              </button>
+            </div>
+          )}
         </div>
         <div className="flex items-center justify-between pt-6">
           <button
