@@ -338,25 +338,78 @@ export default function ProductList({ floristeriaId }) {
               )}
             </div>
             
-            {selectedProducts.size > 0 && (
+            <div className="flex items-center gap-3">
+              {/* Botón de Test de Backend */}
               <button
-                onClick={handleBulkDelete}
-                disabled={bulkDeleting}
-                className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={async () => {
+                  if (productos.length === 0) {
+                    showMessage('error', 'No hay productos para testear');
+                    return;
+                  }
+                  
+                  const testProduct = productos[0];
+                  console.log('🧪 TEST BACKEND - Producto:', testProduct);
+                  
+                  try {
+                    const axiosInstance = getAxiosInstance(token);
+                    
+                    // Test 1: Verificar que el producto existe
+                    console.log('🧪 TEST 1: Verificando que el producto existe...');
+                    const getResponse = await axiosInstance.get(`/flores/${testProduct._id}`);
+                    console.log('✅ Producto existe:', getResponse.data);
+                    
+                    // Test 2: Intentar eliminar
+                    console.log('🧪 TEST 2: Intentando eliminar...');
+                    const deleteResponse = await axiosInstance.delete(`/flores/${testProduct._id}`);
+                    console.log('✅ Respuesta DELETE:', deleteResponse);
+                    
+                    // Test 3: Verificar si realmente se eliminó
+                    console.log('🧪 TEST 3: Verificando si se eliminó...');
+                    setTimeout(async () => {
+                      try {
+                        const verifyResponse = await axiosInstance.get(`/flores/${testProduct._id}`);
+                        console.log('❌ PRODUCTO SIGUE EXISTIENDO:', verifyResponse.data);
+                        showMessage('error', 'PRODUCTO NO SE ELIMINÓ DEL BACKEND');
+                      } catch (verifyError) {
+                        if (verifyError.response?.status === 404) {
+                          console.log('✅ PRODUCTO ELIMINADO CORRECTAMENTE');
+                          showMessage('success', 'PRODUCTO ELIMINADO DEL BACKEND');
+                        } else {
+                          console.log('❌ Error verificando:', verifyError);
+                        }
+                      }
+                    }, 2000);
+                    
+                  } catch (error) {
+                    console.error('❌ TEST BACKEND FALLÓ:', error);
+                    showMessage('error', `Test falló: ${error.message}`);
+                  }
+                }}
+                className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2 rounded-xl font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all duration-300"
               >
-                {bulkDeleting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Eliminando...
-                  </>
-                ) : (
-                  <>
-                    <Trash className="w-5 h-5" />
-                    Eliminar Seleccionados ({selectedProducts.size})
-                  </>
-                )}
+                🧪 Test Backend
               </button>
-            )}
+              
+              {selectedProducts.size > 0 && (
+                <button
+                  onClick={handleBulkDelete}
+                  disabled={bulkDeleting}
+                  className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {bulkDeleting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Eliminando...
+                    </>
+                  ) : (
+                    <>
+                      <Trash className="w-5 h-5" />
+                      Eliminar Seleccionados ({selectedProducts.size})
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
