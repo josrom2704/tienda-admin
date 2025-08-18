@@ -90,7 +90,7 @@ export default function Login() {
               </div>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300 bg-clip-text text-transparent mb-2">
-              🌸 Bienvenido a GOTHAM
+              🌸 Bienvenido a Panel Admin
             </h1>
             <p className="text-purple-200 text-lg">
               El puente más hermoso hacia la magia floral
@@ -208,7 +208,7 @@ export default function Login() {
           <div className={`text-center mt-8 transition-all duration-1000 delay-500 ${animate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <div className="flex items-center justify-center gap-2 mb-2">
               <Star className="w-4 h-4 text-yellow-400" />
-              <span className="text-purple-300 text-sm">GOTHAM - Ciudad de las Flores</span>
+              <span className="text-purple-300 text-sm"> Floristeria - Gestion de Flores</span>
               <Star className="w-4 h-4 text-yellow-400" />
             </div>
             <p className="text-purple-400 text-xs">

@@ -226,7 +226,7 @@ export default function FloristeriaList() {
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-white">✨</div>
-              <div className="text-purple-200">Calidad Premium</div>
+              <div className="text-purple-200">Calidad Garantizada</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-white">🌟</div>
