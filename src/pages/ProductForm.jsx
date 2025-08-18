@@ -794,4 +794,4 @@ export default function ProductForm() {
     </div>
   </div>
   );
-}
+} // ✅ HTML structure now properly balanced
