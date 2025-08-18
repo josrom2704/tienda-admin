@@ -13,7 +13,9 @@ import {
   CheckSquare, 
   Square,
   AlertTriangle,
-  Trash
+  Trash,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 
 /**
@@ -31,6 +33,7 @@ export default function ProductList({ floristeriaId }) {
   const [deletingId, setDeletingId] = useState(null);
   const [selectedProducts, setSelectedProducts] = useState(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
 
   // Si no se pasa floristeriaId, cargar floristerías para selección
   useEffect(() => {
@@ -41,7 +44,8 @@ export default function ProductList({ floristeriaId }) {
           const res = await axiosInstance.get('/floristerias');
           setFloristerias(res.data);
         } catch (error) {
-          console.error(error);
+          console.error('Error cargando floristerías:', error);
+          showMessage('error', 'Error al cargar floristerías');
         }
       })();
     }
@@ -56,17 +60,28 @@ export default function ProductList({ floristeriaId }) {
     }
   }, [selectedFloristeria, token]);
 
+  // Función para mostrar mensajes
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+  };
+
   // Función para cargar productos
   const fetchProductos = async () => {
     setLoading(true);
     try {
       const axiosInstance = getAxiosInstance(token);
+      console.log('🔄 Cargando productos para floristería:', selectedFloristeria);
+      
       const res = await axiosInstance.get(`/flores/floristeria/${selectedFloristeria}`);
+      console.log('✅ Productos cargados:', res.data);
+      
       setProductos(res.data);
       // Limpiar selección al cambiar floristería
       setSelectedProducts(new Set());
     } catch (error) {
-      console.error(error);
+      console.error('❌ Error cargando productos:', error);
+      showMessage('error', 'Error al cargar productos');
     } finally {
       setLoading(false);
     }
@@ -79,18 +94,49 @@ export default function ProductList({ floristeriaId }) {
     }
 
     setDeletingId(productId);
+    console.log('🗑️ Intentando eliminar producto:', productId);
+    
     try {
       const axiosInstance = getAxiosInstance(token);
-      await axiosInstance.delete(`/flores/${productId}`);
       
-      // Recargar la lista completa para asegurar sincronización
-      await fetchProductos();
+      // Hacer la petición DELETE
+      const response = await axiosInstance.delete(`/flores/${productId}`);
+      console.log('✅ Respuesta del backend:', response);
       
-      // Mostrar confirmación
-      alert('Producto eliminado exitosamente');
+      if (response.status === 200 || response.status === 204) {
+        // Eliminar del estado local inmediatamente
+        setProductos(prevProductos => prevProductos.filter(p => p._id !== productId));
+        
+        // Mostrar mensaje de éxito
+        showMessage('success', 'Producto eliminado exitosamente');
+        
+        // Recargar la lista para asegurar sincronización
+        setTimeout(() => {
+          fetchProductos();
+        }, 1000);
+      } else {
+        throw new Error(`Status inesperado: ${response.status}`);
+      }
+      
     } catch (error) {
-      console.error('Error eliminando producto:', error);
-      alert('Error al eliminar el producto. Inténtalo de nuevo.');
+      console.error('❌ Error eliminando producto:', error);
+      
+      // Mostrar error específico
+      let errorMessage = 'Error al eliminar el producto';
+      if (error.response) {
+        errorMessage = `Error ${error.response.status}: ${error.response.data?.message || 'Error del servidor'}`;
+      } else if (error.request) {
+        errorMessage = 'No se pudo conectar con el servidor';
+      } else {
+        errorMessage = error.message;
+      }
+      
+      showMessage('error', errorMessage);
+      
+      // Recargar la lista para ver el estado real
+      setTimeout(() => {
+        fetchProductos();
+      }, 1000);
     } finally {
       setDeletingId(null);
     }
@@ -99,7 +145,7 @@ export default function ProductList({ floristeriaId }) {
   // Función para borrado masivo
   const handleBulkDelete = async () => {
     if (selectedProducts.size === 0) {
-      alert('Por favor, selecciona al menos un producto para eliminar.');
+      showMessage('error', 'Por favor, selecciona al menos un producto para eliminar.');
       return;
     }
 
@@ -109,26 +155,54 @@ export default function ProductList({ floristeriaId }) {
     }
 
     setBulkDeleting(true);
+    console.log('🗑️ Iniciando borrado masivo de:', Array.from(selectedProducts));
+    
     try {
       const axiosInstance = getAxiosInstance(token);
       
       // Eliminar productos uno por uno
-      const deletePromises = Array.from(selectedProducts).map(productId =>
-        axiosInstance.delete(`/flores/${productId}`)
-      );
+      const deletePromises = Array.from(selectedProducts).map(async (productId) => {
+        try {
+          const response = await axiosInstance.delete(`/flores/${productId}`);
+          console.log(`✅ Producto ${productId} eliminado:`, response.status);
+          return { success: true, id: productId };
+        } catch (error) {
+          console.error(`❌ Error eliminando producto ${productId}:`, error);
+          return { success: false, id: productId, error: error.message };
+        }
+      });
       
-      await Promise.all(deletePromises);
+      const results = await Promise.all(deletePromises);
+      const successful = results.filter(r => r.success);
+      const failed = results.filter(r => !r.success);
       
-      // Recargar la lista
-      await fetchProductos();
+      console.log('📊 Resultados del borrado masivo:', { successful, failed });
+      
+      if (successful.length > 0) {
+        // Actualizar estado local
+        setProductos(prevProductos => 
+          prevProductos.filter(p => !selectedProducts.has(p._id))
+        );
+        
+        // Mostrar mensaje de éxito
+        showMessage('success', `${successful.length} producto(s) eliminado(s) exitosamente`);
+      }
+      
+      if (failed.length > 0) {
+        showMessage('error', `${failed.length} producto(s) no se pudieron eliminar`);
+      }
       
       // Limpiar selección
       setSelectedProducts(new Set());
       
-      alert(`${selectedProducts.size} producto(s) eliminado(s) exitosamente`);
+      // Recargar la lista para asegurar sincronización
+      setTimeout(() => {
+        fetchProductos();
+      }, 1000);
+      
     } catch (error) {
-      console.error('Error en borrado masivo:', error);
-      alert('Error al eliminar algunos productos. Inténtalo de nuevo.');
+      console.error('❌ Error en borrado masivo:', error);
+      showMessage('error', 'Error en el borrado masivo. Inténtalo de nuevo.');
     } finally {
       setBulkDeleting(false);
     }
@@ -174,6 +248,24 @@ export default function ProductList({ floristeriaId }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+      {/* Mensajes de estado */}
+      {message.text && (
+        <div className={`fixed top-6 right-6 z-50 p-4 rounded-2xl shadow-2xl backdrop-blur-xl border transition-all duration-500 ${
+          message.type === 'success' 
+            ? 'bg-green-500/20 border-green-400/30 text-green-200' 
+            : 'bg-red-500/20 border-red-400/30 text-red-200'
+        }`}>
+          <div className="flex items-center gap-3">
+            {message.type === 'success' ? (
+              <CheckCircle className="w-5 h-5 text-green-400" />
+            ) : (
+              <XCircle className="w-5 h-5 text-red-400" />
+            )}
+            <span className="font-medium">{message.text}</span>
+          </div>
+        </div>
+      )}
+
       {/* Header Glass */}
       <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-6 mb-8 border border-white/20 shadow-2xl">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -297,7 +389,7 @@ export default function ProductList({ floristeriaId }) {
               {productos.map((prod) => (
                 <div
                   key={prod._id}
-                  className={`group backdrop-blur-xl bg-white/10 rounded-3xl p-6 border transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 ${
+                  className={`group backdrop-blur-xl bg-white/10 rounded-3xl p-6 border transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 relative ${
                     selectedProducts.has(prod._id) 
                       ? 'border-purple-400 shadow-2xl shadow-purple-500/50' 
                       : 'border-white/20 shadow-xl hover:shadow-2xl hover:shadow-purple-500/25'
