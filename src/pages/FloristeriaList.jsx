@@ -19,12 +19,12 @@ export default function FloristeriaList() {
   }, [token]);
 
   const fetchFloristerias = async () => {
-    try {
+      try {
       setLoading(true);
-      const axiosInstance = getAxiosInstance(token);
-      const res = await axiosInstance.get('/floristerias');
-      setFloristerias(res.data);
-    } catch (error) {
+        const axiosInstance = getAxiosInstance(token);
+        const res = await axiosInstance.get('/floristerias');
+        setFloristerias(res.data);
+      } catch (error) {
       console.error('Error al cargar floristerías:', error);
     } finally {
       setLoading(false);
@@ -95,21 +95,21 @@ export default function FloristeriaList() {
             <div className="w-16 h-16 bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 rounded-2xl flex items-center justify-center shadow-2xl">
               <Store className="w-8 h-8 text-white" />
             </div>
-            <div>
+    <div>
               <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300 bg-clip-text text-transparent mb-2">
                 🌸 Floristerías
               </h1>
               <p className="text-purple-200 text-lg font-medium">Gestiona todas las floristerías de tu tienda</p>
             </div>
           </div>
-          <Link
-            to="nuevo"
+        <Link
+          to="nuevo"
             className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 text-white font-bold rounded-2xl hover:from-pink-600 hover:via-purple-700 hover:to-blue-700 transition-all duration-500 transform hover:scale-110 hover:shadow-2xl hover:shadow-pink-500/50"
-          >
+        >
             <Sparkles className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
             <span className="text-lg">Añadir Nueva</span>
             <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
-          </Link>
+        </Link>
         </div>
       </div>
       
@@ -182,8 +182,8 @@ export default function FloristeriaList() {
                     className="group/edit inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 text-white font-bold rounded-2xl hover:from-blue-600 hover:via-cyan-600 hover:to-teal-600 transition-all duration-300 transform hover:scale-110 hover:shadow-xl hover:shadow-blue-500/50"
                   >
                     <Edit size={20} className="group-hover/edit:rotate-12 transition-transform duration-300" />
-                    Editar
-                  </Link>
+                  Editar
+                </Link>
                   <button
                     onClick={() => handleDelete(flo._id, flo.nombre)}
                     disabled={loading}

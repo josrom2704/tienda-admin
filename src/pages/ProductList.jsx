@@ -269,7 +269,7 @@ export default function ProductList({ floristeriaId }) {
       {/* Header Glass */}
       <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-6 mb-8 border border-white/20 shadow-2xl">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
+    <div>
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
               🌸 Arreglos Florales
             </h1>
@@ -277,15 +277,15 @@ export default function ProductList({ floristeriaId }) {
               Gestiona tu catálogo de arreglos elegantes
             </p>
           </div>
-          {selectedFloristeria && (
-            <Link
-              to={`nuevo?floristeria=${selectedFloristeria}`}
+        {selectedFloristeria && (
+          <Link
+            to={`nuevo?floristeria=${selectedFloristeria}`}
               className="group relative inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-2xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-pink-500/25"
-            >
+          >
               <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
               Añadir Arreglo
-            </Link>
-          )}
+          </Link>
+        )}
         </div>
       </div>
 
@@ -361,7 +361,10 @@ export default function ProductList({ floristeriaId }) {
                     // Test 2: Intentar eliminar
                     console.log('🧪 TEST 2: Intentando eliminar...');
                     const deleteResponse = await axiosInstance.delete(`/flores/${testProduct._id}`);
-                    console.log('✅ Respuesta DELETE:', deleteResponse);
+                    console.log('✅ Respuesta DELETE completa:', deleteResponse);
+                    console.log('📊 Status:', deleteResponse.status);
+                    console.log('📊 Headers:', deleteResponse.headers);
+                    console.log('📊 Data:', deleteResponse.data);
                     
                     // Test 3: Verificar si realmente se eliminó
                     console.log('🧪 TEST 3: Verificando si se eliminó...');
@@ -370,6 +373,16 @@ export default function ProductList({ floristeriaId }) {
                         const verifyResponse = await axiosInstance.get(`/flores/${testProduct._id}`);
                         console.log('❌ PRODUCTO SIGUE EXISTIENDO:', verifyResponse.data);
                         showMessage('error', 'PRODUCTO NO SE ELIMINÓ DEL BACKEND');
+                        
+                        // Test adicional: Intentar eliminar de nuevo
+                        console.log('🧪 TEST 4: Intentando eliminar de nuevo...');
+                        try {
+                          const secondDelete = await axiosInstance.delete(`/flores/${testProduct._id}`);
+                          console.log('🔄 Segunda eliminación:', secondDelete.status);
+                        } catch (secondError) {
+                          console.log('🔄 Error en segunda eliminación:', secondError.response?.status);
+                        }
+                        
                       } catch (verifyError) {
                         if (verifyError.response?.status === 404) {
                           console.log('✅ PRODUCTO ELIMINADO CORRECTAMENTE');
@@ -382,6 +395,7 @@ export default function ProductList({ floristeriaId }) {
                     
                   } catch (error) {
                     console.error('❌ TEST BACKEND FALLÓ:', error);
+                    console.error('❌ Error completo:', error.response || error);
                     showMessage('error', `Test falló: ${error.message}`);
                   }
                 }}
@@ -439,7 +453,7 @@ export default function ProductList({ floristeriaId }) {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {productos.map((prod) => (
+            {productos.map((prod) => (
                 <div
                   key={prod._id}
                   className={`group backdrop-blur-xl bg-white/10 rounded-3xl p-6 border transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 relative ${
@@ -517,13 +531,13 @@ export default function ProductList({ floristeriaId }) {
 
                     {/* Botones de Acción */}
                     <div className="flex gap-2 pt-2">
-                      <Link
-                        to={`${prod._id}?floristeria=${selectedFloristeria}`}
+                  <Link
+                    to={`${prod._id}?floristeria=${selectedFloristeria}`}
                         className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-xl font-medium hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-105"
-                      >
+                  >
                         <Edit className="w-4 h-4" />
-                        Editar
-                      </Link>
+                    Editar
+                  </Link>
                       <button
                         onClick={() => handleDelete(prod._id)}
                         disabled={deletingId === prod._id}

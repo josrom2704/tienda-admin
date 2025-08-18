@@ -21,12 +21,12 @@ export default function UserList() {
 
   const fetchUsers = async () => {
     setLoading(true);
-    try {
-      const axiosInstance = getAxiosInstance(token);
-      const res = await axiosInstance.get('/users');
-      setUsers(res.data);
-    } catch (error) {
-      console.error(error);
+      try {
+        const axiosInstance = getAxiosInstance(token);
+        const res = await axiosInstance.get('/users');
+        setUsers(res.data);
+      } catch (error) {
+        console.error(error);
     } finally {
       setLoading(false);
     }
@@ -82,7 +82,7 @@ export default function UserList() {
       {/* Header Glass */}
       <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-6 mb-8 border border-white/20 shadow-2xl">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
+    <div>
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
               👥 Gestión de Usuarios
             </h1>
@@ -90,13 +90,13 @@ export default function UserList() {
               Administra las cuentas de tu sistema
             </p>
           </div>
-          <Link
-            to="nuevo"
+        <Link
+          to="nuevo"
             className="group relative inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-2xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-pink-500/25"
-          >
+        >
             <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
             Añadir Usuario
-          </Link>
+        </Link>
         </div>
       </div>
 

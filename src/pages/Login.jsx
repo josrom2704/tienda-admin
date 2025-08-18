@@ -127,16 +127,16 @@ export default function Login() {
                       Usuario
                     </div>
                   </label>
-                  <input
-                    type="text"
+          <input
+            type="text"
                     className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-4 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
-                    value={username}
-                    placeholder="admin"
-                    onChange={(e) => setUsername(e.target.value)}
-                    autoComplete="username"
-                    required
-                  />
-                </div>
+            value={username}
+            placeholder="admin"
+            onChange={(e) => setUsername(e.target.value)}
+            autoComplete="username"
+            required
+          />
+        </div>
 
                 {/* Campo Contraseña */}
                 <div className="space-y-2">
@@ -147,15 +147,15 @@ export default function Login() {
                     </div>
                   </label>
                   <div className="relative">
-                    <input
+          <input
                       type={showPassword ? 'text' : 'password'}
                       className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-4 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 backdrop-blur-sm pr-12"
-                      value={password}
-                      placeholder="admin123"
-                      onChange={(e) => setPassword(e.target.value)}
-                      autoComplete="current-password"
-                      required
-                    />
+            value={password}
+            placeholder="admin123"
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
@@ -164,11 +164,11 @@ export default function Login() {
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
-                </div>
+        </div>
 
                 {/* Botón de envío */}
-                <button
-                  type="submit"
+        <button
+          type="submit"
                   disabled={loading}
                   className="group w-full bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-pink-600 hover:via-purple-700 hover:to-blue-700 transition-all duration-500 transform hover:scale-105 hover:shadow-2xl hover:shadow-pink-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden"
                 >
@@ -184,8 +184,8 @@ export default function Login() {
                     </div>
                   )}
                   <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
-                </button>
-              </form>
+        </button>
+      </form>
 
               {/* Información adicional */}
               <div className="mt-6 text-center">
