@@ -68,56 +68,128 @@ export default function FloristeriaForm() {
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">{id ? 'Editar' : 'Añadir'} Floristería</h2>
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
-        <div>
-          <label className="block text-gray-700">Nombre</label>
-          <input
-            type="text"
-            name="nombre"
-            value={form.nombre}
-            onChange={handleChange}
-            className="w-full border rounded p-2"
-            required
-          />
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-6">
+      <div className="max-w-2xl mx-auto">
+        {/* Header elegante */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white mb-2">
+            {id ? 'Editar' : 'Añadir'} Floristería
+          </h1>
+          <p className="text-gray-300 text-lg">
+            {id ? 'Modifica los datos de la floristería' : 'Crea una nueva floristería para tu catálogo'}
+          </p>
         </div>
-        <div>
-          <label className="block text-gray-700">Descripción</label>
-          <textarea
-            name="descripcion"
-            value={form.descripcion}
-            onChange={handleChange}
-            className="w-full border rounded p-2"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-700">URL</label>
-          <input
-            type="text"
-            name="url"
-            value={form.url}
-            onChange={handleChange}
-            className="w-full border rounded p-2"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-700">Logo</label>
-          <input
-            type="file"
-            name="logo"
-            accept="image/*"
-            onChange={handleChange}
-            className="w-full"
-          />
-        </div>
-        <button
-          type="submit"
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
-        >
-          {id ? 'Actualizar' : 'Crear'}
-        </button>
-      </form>
+
+        {/* Formulario con diseño premium */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Campo Nombre */}
+          <div className="group">
+            <label className="block text-sm font-medium text-yellow-400 mb-2">
+              Nombre de la Floristería
+            </label>
+            <input
+              type="text"
+              name="nombre"
+              value={form.nombre}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
+                       text-white placeholder-gray-400 focus:border-yellow-400 
+                       focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
+                       backdrop-blur-sm"
+              placeholder="Ej: Flores del Paraíso"
+              required
+            />
+          </div>
+
+          {/* Campo Descripción */}
+          <div className="group">
+            <label className="block text-sm font-medium text-yellow-400 mb-2">
+              Descripción
+            </label>
+            <textarea
+              name="descripcion"
+              value={form.descripcion}
+              onChange={handleChange}
+              rows="4"
+              className="w-full px-4 py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
+                       text-white placeholder-gray-400 focus:border-yellow-400 
+                       focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
+                       backdrop-blur-sm resize-none"
+              placeholder="Describe los servicios y especialidades de la floristería..."
+              required
+            />
+          </div>
+
+          {/* Campo URL */}
+          <div className="group">
+            <label className="block text-sm font-medium text-yellow-400 mb-2">
+              URL del Sitio Web
+            </label>
+            <input
+              type="url"
+              name="url"
+              value={form.url}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
+                       text-white placeholder-gray-400 focus:border-yellow-400 
+                       focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
+                       backdrop-blur-sm"
+              placeholder="https://www.ejemplo.com"
+              required
+            />
+          </div>
+
+          {/* Campo Logo */}
+          <div className="group">
+            <label className="block text-sm font-medium text-yellow-400 mb-2">
+              Logo de la Floristería
+            </label>
+            <div className="flex items-center space-x-4">
+              <input
+                type="file"
+                name="logo"
+                onChange={handleChange}
+                accept="image/*"
+                className="hidden"
+                id="logo-upload"
+              />
+              <label
+                htmlFor="logo-upload"
+                className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-900 
+                         font-semibold rounded-lg cursor-pointer transition-all duration-300
+                         transform hover:scale-105 hover:shadow-lg"
+              >
+                Seleccionar Logo
+              </label>
+              <span className="text-gray-400 text-sm">
+                {form.logo ? form.logo.name : 'Sin archivos seleccionados'}
+              </span>
+            </div>
+          </div>
+
+          {/* Botones de acción */}
+          <div className="flex space-x-4 pt-6">
+            <button
+              type="submit"
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 
+                       hover:from-yellow-600 hover:to-yellow-700 text-gray-900 font-bold 
+                       rounded-lg transition-all duration-300 transform hover:scale-105 
+                       hover:shadow-xl focus:ring-4 focus:ring-yellow-400/30"
+            >
+              ✨ {id ? 'Actualizar' : 'Crear'} Floristería
+            </button>
+            
+            <button
+              type="button"
+              onClick={() => navigate('/admin/floristerias')}
+              className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold 
+                       rounded-lg transition-all duration-300 hover:shadow-lg"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
