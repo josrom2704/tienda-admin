@@ -127,18 +127,15 @@ export default function Login() {
                       Usuario
                     </div>
                   </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-4 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
-                      value={username}
-                      placeholder="admin"
-                      onChange={(e) => setUsername(e.target.value)}
-                      autoComplete="username"
-                      required
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-purple-500/10 rounded-2xl opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                  </div>
+                  <input
+                    type="text"
+                    className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-4 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                    value={username}
+                    placeholder="admin"
+                    onChange={(e) => setUsername(e.target.value)}
+                    autoComplete="username"
+                    required
+                  />
                 </div>
 
                 {/* Campo Contraseña */}
@@ -166,7 +163,6 @@ export default function Login() {
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
-                    <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-purple-500/10 rounded-2xl opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
                 </div>
 
@@ -179,11 +175,11 @@ export default function Login() {
                   {loading ? (
                     <div className="flex items-center justify-center gap-3">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                      <span>Cruzando el puente...</span>
+                      <span>Accediendo...</span>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-3">
-                      <span>Entrar a GOTHAM</span>
+                      <span>Acceder</span>
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                     </div>
                   )}

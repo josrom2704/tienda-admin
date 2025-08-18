@@ -167,7 +167,7 @@ export default function FloristeriaList() {
                   <div className="flex items-center gap-6 mt-4 pl-8">
                     <div className="flex items-center gap-2 text-purple-300">
                       <Flower className="w-4 h-4" />
-                      <span className="text-sm">Floristería Premium</span>
+                      <span className="text-sm">Floristería</span>
                     </div>
                     <div className="flex items-center gap-2 text-purple-300">
                       <Crown className="w-4 h-4" />
