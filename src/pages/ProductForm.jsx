@@ -792,5 +792,6 @@ export default function ProductForm() {
         </div>
       </form>
     </div>
+  </div>
   );
 }
