@@ -2,7 +2,19 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getAxiosInstance } from '../api';
-import { Trash2, Edit, Plus, Flower, Package, Wine, Gift } from 'lucide-react';
+import { 
+  Trash2, 
+  Edit, 
+  Plus, 
+  Flower, 
+  Package, 
+  Wine, 
+  Gift, 
+  CheckSquare, 
+  Square,
+  AlertTriangle,
+  Trash
+} from 'lucide-react';
 
 /**
  * Muestra una lista de productos (arreglos) filtrados por floristería.
@@ -17,6 +29,8 @@ export default function ProductList({ floristeriaId }) {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [selectedProducts, setSelectedProducts] = useState(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   // Si no se pasa floristeriaId, cargar floristerías para selección
   useEffect(() => {
@@ -36,24 +50,29 @@ export default function ProductList({ floristeriaId }) {
   // Cargar productos cuando se selecciona una floristería
   useEffect(() => {
     if (selectedFloristeria) {
-      (async () => {
-        setLoading(true);
-        try {
-          const axiosInstance = getAxiosInstance(token);
-          const res = await axiosInstance.get(`/flores/floristeria/${selectedFloristeria}`);
-          setProductos(res.data);
-        } catch (error) {
-          console.error(error);
-        } finally {
-          setLoading(false);
-        }
-      })();
+      fetchProductos();
     } else {
       setProductos([]);
     }
   }, [selectedFloristeria, token]);
 
-  // Función para eliminar producto
+  // Función para cargar productos
+  const fetchProductos = async () => {
+    setLoading(true);
+    try {
+      const axiosInstance = getAxiosInstance(token);
+      const res = await axiosInstance.get(`/flores/floristeria/${selectedFloristeria}`);
+      setProductos(res.data);
+      // Limpiar selección al cambiar floristería
+      setSelectedProducts(new Set());
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función para eliminar producto individual
   const handleDelete = async (productId) => {
     if (!window.confirm('¿Estás seguro de que quieres eliminar este arreglo?')) {
       return;
@@ -64,13 +83,74 @@ export default function ProductList({ floristeriaId }) {
       const axiosInstance = getAxiosInstance(token);
       await axiosInstance.delete(`/flores/${productId}`);
       
-      // Actualizar la lista
-      setProductos(productos.filter(p => p._id !== productId));
+      // Recargar la lista completa para asegurar sincronización
+      await fetchProductos();
+      
+      // Mostrar confirmación
+      alert('Producto eliminado exitosamente');
     } catch (error) {
       console.error('Error eliminando producto:', error);
-      alert('Error al eliminar el producto');
+      alert('Error al eliminar el producto. Inténtalo de nuevo.');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  // Función para borrado masivo
+  const handleBulkDelete = async () => {
+    if (selectedProducts.size === 0) {
+      alert('Por favor, selecciona al menos un producto para eliminar.');
+      return;
+    }
+
+    const confirmMessage = `¿Estás seguro de que quieres eliminar ${selectedProducts.size} producto(s)? Esta acción no se puede deshacer.`;
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    setBulkDeleting(true);
+    try {
+      const axiosInstance = getAxiosInstance(token);
+      
+      // Eliminar productos uno por uno
+      const deletePromises = Array.from(selectedProducts).map(productId =>
+        axiosInstance.delete(`/flores/${productId}`)
+      );
+      
+      await Promise.all(deletePromises);
+      
+      // Recargar la lista
+      await fetchProductos();
+      
+      // Limpiar selección
+      setSelectedProducts(new Set());
+      
+      alert(`${selectedProducts.size} producto(s) eliminado(s) exitosamente`);
+    } catch (error) {
+      console.error('Error en borrado masivo:', error);
+      alert('Error al eliminar algunos productos. Inténtalo de nuevo.');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  // Función para manejar selección individual
+  const handleProductSelect = (productId) => {
+    const newSelected = new Set(selectedProducts);
+    if (newSelected.has(productId)) {
+      newSelected.delete(productId);
+    } else {
+      newSelected.add(productId);
+    }
+    setSelectedProducts(newSelected);
+  };
+
+  // Función para seleccionar/deseleccionar todos
+  const handleSelectAll = () => {
+    if (selectedProducts.size === productos.length) {
+      setSelectedProducts(new Set());
+    } else {
+      setSelectedProducts(new Set(productos.map(p => p._id)));
     }
   };
 
@@ -138,6 +218,57 @@ export default function ProductList({ floristeriaId }) {
         </div>
       )}
 
+      {/* Barra de Acciones Múltiples */}
+      {selectedFloristeria && productos.length > 0 && (
+        <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-6 mb-6 border border-white/20 shadow-xl">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleSelectAll}
+                className="flex items-center gap-2 text-purple-200 hover:text-white transition-colors duration-200"
+              >
+                {selectedProducts.size === productos.length ? (
+                  <CheckSquare className="w-5 h-5 text-purple-400" />
+                ) : (
+                  <Square className="w-5 h-5 text-purple-400" />
+                )}
+                <span className="font-medium">
+                  {selectedProducts.size === productos.length ? 'Deseleccionar Todo' : 'Seleccionar Todo'}
+                </span>
+              </button>
+              
+              {selectedProducts.size > 0 && (
+                <div className="flex items-center gap-2 text-purple-200">
+                  <span className="font-medium">
+                    {selectedProducts.size} producto(s) seleccionado(s)
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            {selectedProducts.size > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                disabled={bulkDeleting}
+                className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {bulkDeleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <Trash className="w-5 h-5" />
+                    Eliminar Seleccionados ({selectedProducts.size})
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Loading State */}
       {loading && (
         <div className="flex justify-center items-center py-12">
@@ -166,8 +297,30 @@ export default function ProductList({ floristeriaId }) {
               {productos.map((prod) => (
                 <div
                   key={prod._id}
-                  className="group backdrop-blur-xl bg-white/10 rounded-3xl p-6 border border-white/20 shadow-xl hover:shadow-2xl hover:shadow-purple-500/25 transition-all duration-500 transform hover:scale-105 hover:-translate-y-2"
+                  className={`group backdrop-blur-xl bg-white/10 rounded-3xl p-6 border transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 ${
+                    selectedProducts.has(prod._id) 
+                      ? 'border-purple-400 shadow-2xl shadow-purple-500/50' 
+                      : 'border-white/20 shadow-xl hover:shadow-2xl hover:shadow-purple-500/25'
+                  }`}
                 >
+                  {/* Checkbox de Selección */}
+                  <div className="absolute top-4 right-4 z-10">
+                    <button
+                      onClick={() => handleProductSelect(prod._id)}
+                      className={`p-2 rounded-lg transition-all duration-200 ${
+                        selectedProducts.has(prod._id)
+                          ? 'bg-purple-500 text-white'
+                          : 'bg-white/20 text-white/60 hover:bg-white/30'
+                      }`}
+                    >
+                      {selectedProducts.has(prod._id) ? (
+                        <CheckSquare className="w-4 h-4" />
+                      ) : (
+                        <Square className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+
                   {/* Imagen del Producto */}
                   <div className="relative mb-4 rounded-2xl overflow-hidden bg-gradient-to-br from-purple-400/20 to-pink-400/20 h-48 flex items-center justify-center">
                     {prod.imagen ? (
@@ -250,9 +403,20 @@ export default function ProductList({ floristeriaId }) {
       {/* Footer Glass */}
       {selectedFloristeria && productos.length > 0 && (
         <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-6 mt-8 border border-white/20 shadow-xl text-center">
-          <p className="text-purple-200">
-            Total de arreglos: <span className="font-bold text-white">{productos.length}</span>
-          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white">{productos.length}</div>
+              <div className="text-purple-200">Total de Arreglos</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white">{selectedProducts.size}</div>
+              <div className="text-purple-200">Seleccionados</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white">✨</div>
+              <div className="text-purple-200">Calidad Garantizada</div>
+            </div>
+          </div>
         </div>
       )}
     </div>
