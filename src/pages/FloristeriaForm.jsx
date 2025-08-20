@@ -67,129 +67,131 @@ export default function FloristeriaForm() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-6">
-      <div className="max-w-2xl mx-auto">
-        {/* Header elegante */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
-            {id ? 'Editar' : 'Añadir'} Floristería
-          </h1>
-          <p className="text-gray-300 text-lg">
-            {id ? 'Modifica los datos de la floristería' : 'Crea una nueva floristería para tu catálogo'}
-          </p>
+  // ... existing code ...
+return (
+  <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-4 sm:p-6 lg:p-8">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Header elegante - Responsive */}
+      <div className="text-center mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 sm:mb-3">
+          {id ? 'Editar' : 'Añadir'} Floristería
+        </h1>
+        <p className="text-sm sm:text-base lg:text-lg text-gray-300 px-2">
+          {id ? 'Modifica los datos de la floristería' : 'Crea una nueva floristería para tu catálogo'}
+        </p>
+      </div>
+
+      {/* Formulario con diseño premium - Responsive */}
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        {/* Campo Nombre */}
+        <div className="group">
+          <label className="block text-sm sm:text-base font-medium text-yellow-400 mb-2">
+            Nombre de la Floristería
+          </label>
+          <input
+            type="text"
+            name="nombre"
+            value={form.nombre}
+            onChange={handleChange}
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
+                     text-white placeholder-gray-400 focus:border-yellow-400 
+                     focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
+                     backdrop-blur-sm text-sm sm:text-base"
+            placeholder="Ej: Flores del Paraíso"
+            required
+          />
         </div>
 
-        {/* Formulario con diseño premium */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Campo Nombre */}
-          <div className="group">
-            <label className="block text-sm font-medium text-yellow-400 mb-2">
-              Nombre de la Floristería
-            </label>
+        {/* Campo Descripción */}
+        <div className="group">
+          <label className="block text-sm sm:text-base font-medium text-yellow-400 mb-2">
+            Descripción
+          </label>
+          <textarea
+            name="descripcion"
+            value={form.descripcion}
+            onChange={handleChange}
+            rows="3"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
+                     text-white placeholder-gray-400 focus:border-yellow-400 
+                     focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
+                     backdrop-blur-sm resize-none text-sm sm:text-base"
+            placeholder="Describe los servicios y especialidades de la floristería..."
+            required
+          />
+        </div>
+
+        {/* Campo URL */}
+        <div className="group">
+          <label className="block text-sm sm:text-base font-medium text-yellow-400 mb-2">
+            URL del Sitio Web
+          </label>
+          <input
+            type="url"
+            name="url"
+            value={form.url}
+            onChange={handleChange}
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
+                     text-white placeholder-gray-400 focus:border-yellow-400 
+                     focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
+                     backdrop-blur-sm text-sm sm:text-base"
+            placeholder="https://www.ejemplo.com"
+            required
+          />
+        </div>
+
+        {/* Campo Logo - Responsive */}
+        <div className="group">
+          <label className="block text-sm sm:text-base font-medium text-yellow-400 mb-2">
+            Logo de la Floristería
+          </label>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
             <input
-              type="text"
-              name="nombre"
-              value={form.nombre}
+              type="file"
+              name="logo"
               onChange={handleChange}
-              className="w-full px-4 py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
-                       text-white placeholder-gray-400 focus:border-yellow-400 
-                       focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
-                       backdrop-blur-sm"
-              placeholder="Ej: Flores del Paraíso"
-              required
+              accept="image/*"
+              className="hidden"
+              id="logo-upload"
             />
-          </div>
-
-          {/* Campo Descripción */}
-          <div className="group">
-            <label className="block text-sm font-medium text-yellow-400 mb-2">
-              Descripción
-            </label>
-            <textarea
-              name="descripcion"
-              value={form.descripcion}
-              onChange={handleChange}
-              rows="4"
-              className="w-full px-4 py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
-                       text-white placeholder-gray-400 focus:border-yellow-400 
-                       focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
-                       backdrop-blur-sm resize-none"
-              placeholder="Describe los servicios y especialidades de la floristería..."
-              required
-            />
-          </div>
-
-          {/* Campo URL */}
-          <div className="group">
-            <label className="block text-sm font-medium text-yellow-400 mb-2">
-              URL del Sitio Web
-            </label>
-            <input
-              type="url"
-              name="url"
-              value={form.url}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
-                       text-white placeholder-gray-400 focus:border-yellow-400 
-                       focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
-                       backdrop-blur-sm"
-              placeholder="https://www.ejemplo.com"
-              required
-            />
-          </div>
-
-          {/* Campo Logo */}
-          <div className="group">
-            <label className="block text-sm font-medium text-yellow-400 mb-2">
-              Logo de la Floristería
-            </label>
-            <div className="flex items-center space-x-4">
-              <input
-                type="file"
-                name="logo"
-                onChange={handleChange}
-                accept="image/*"
-                className="hidden"
-                id="logo-upload"
-              />
-              <label
-                htmlFor="logo-upload"
-                className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-900 
-                         font-semibold rounded-lg cursor-pointer transition-all duration-300
-                         transform hover:scale-105 hover:shadow-lg"
-              >
-                Seleccionar Logo
-              </label>
-              <span className="text-gray-400 text-sm">
-                {form.logo ? form.logo.name : 'Sin archivos seleccionados'}
-              </span>
-            </div>
-          </div>
-
-          {/* Botones de acción */}
-          <div className="flex space-x-4 pt-6">
-            <button
-              type="submit"
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 
-                       hover:from-yellow-600 hover:to-yellow-700 text-gray-900 font-bold 
-                       rounded-lg transition-all duration-300 transform hover:scale-105 
-                       hover:shadow-xl focus:ring-4 focus:ring-yellow-400/30"
+            <label
+              htmlFor="logo-upload"
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-900 
+                       font-semibold rounded-lg cursor-pointer transition-all duration-300
+                       transform hover:scale-105 hover:shadow-lg text-center text-sm sm:text-base"
             >
-              ✨ {id ? 'Actualizar' : 'Crear'} Floristería
-            </button>
-            
-            <button
-              type="button"
-              onClick={() => navigate('/admin/floristerias')}
-              className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold 
-                       rounded-lg transition-all duration-300 hover:shadow-lg"
-            >
-              Cancelar
-            </button>
+              Seleccionar Logo
+            </label>
+            <span className="text-gray-400 text-xs sm:text-sm w-full sm:w-auto text-center sm:text-left">
+              {form.logo ? form.logo.name : 'Sin archivos seleccionados'}
+            </span>
           </div>
-        </form>
-      </div>
+        </div>
+
+        {/* Botones de acción - Responsive */}
+        <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 pt-4 sm:pt-6">
+          <button
+            type="submit"
+            className="w-full sm:flex-1 px-4 sm:px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 
+                     hover:from-yellow-600 hover:to-yellow-700 text-gray-900 font-bold 
+                     rounded-lg transition-all duration-300 transform hover:scale-105 
+                     hover:shadow-xl focus:ring-4 focus:ring-yellow-400/30 text-sm sm:text-base"
+          >
+            ✨ {id ? 'Actualizar' : 'Crear'} Floristería
+          </button>
+          
+          <button
+            type="button"
+            onClick={() => navigate('/admin/floristerias')}
+            className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold 
+                     rounded-lg transition-all duration-300 hover:shadow-lg text-sm sm:text-base"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
     </div>
-  );
+  </div>
+);
+// ... existing code ...
 }
