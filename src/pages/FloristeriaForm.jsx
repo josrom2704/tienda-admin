@@ -67,131 +67,136 @@ export default function FloristeriaForm() {
     }
   };
 
-  // ... existing code ...
-return (
-  <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-4 sm:p-6 lg:p-8">
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Header elegante - Responsive */}
-      <div className="text-center mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 sm:mb-3">
-          {id ? 'Editar' : 'Añadir'} Floristería
-        </h1>
-        <p className="text-sm sm:text-base lg:text-lg text-gray-300 px-2">
-          {id ? 'Modifica los datos de la floristería' : 'Crea una nueva floristería para tu catálogo'}
-        </p>
-      </div>
-
-      {/* Formulario con diseño premium - Responsive */}
-      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-        {/* Campo Nombre */}
-        <div className="group">
-          <label className="block text-sm sm:text-base font-medium text-yellow-400 mb-2">
-            Nombre de la Floristería
-          </label>
-          <input
-            type="text"
-            name="nombre"
-            value={form.nombre}
-            onChange={handleChange}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
-                     text-white placeholder-gray-400 focus:border-yellow-400 
-                     focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
-                     backdrop-blur-sm text-sm sm:text-base"
-            placeholder="Ej: Flores del Paraíso"
-            required
-          />
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-2 sm:p-4 md:p-6 lg:p-8">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+        {/* Header elegante - Completamente responsive */}
+        <div className="text-center mb-4 sm:mb-6 md:mb-8">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-2 sm:mb-3 md:mb-4">
+            {id ? 'Editar' : 'Añadir'} Floristería
+          </h1>
+          <p className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300 px-1 sm:px-2 md:px-4">
+            {id ? 'Modifica los datos de la floristería' : 'Crea una nueva floristería para tu catálogo'}
+          </p>
         </div>
 
-        {/* Campo Descripción */}
-        <div className="group">
-          <label className="block text-sm sm:text-base font-medium text-yellow-400 mb-2">
-            Descripción
-          </label>
-          <textarea
-            name="descripcion"
-            value={form.descripcion}
-            onChange={handleChange}
-            rows="3"
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
-                     text-white placeholder-gray-400 focus:border-yellow-400 
-                     focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
-                     backdrop-blur-sm resize-none text-sm sm:text-base"
-            placeholder="Describe los servicios y especialidades de la floristería..."
-            required
-          />
-        </div>
-
-        {/* Campo URL */}
-        <div className="group">
-          <label className="block text-sm sm:text-base font-medium text-yellow-400 mb-2">
-            URL del Sitio Web
-          </label>
-          <input
-            type="url"
-            name="url"
-            value={form.url}
-            onChange={handleChange}
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
-                     text-white placeholder-gray-400 focus:border-yellow-400 
-                     focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
-                     backdrop-blur-sm text-sm sm:text-base"
-            placeholder="https://www.ejemplo.com"
-            required
-          />
-        </div>
-
-        {/* Campo Logo - Responsive */}
-        <div className="group">
-          <label className="block text-sm sm:text-base font-medium text-yellow-400 mb-2">
-            Logo de la Floristería
-          </label>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-            <input
-              type="file"
-              name="logo"
-              onChange={handleChange}
-              accept="image/*"
-              className="hidden"
-              id="logo-upload"
-            />
-            <label
-              htmlFor="logo-upload"
-              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-900 
-                       font-semibold rounded-lg cursor-pointer transition-all duration-300
-                       transform hover:scale-105 hover:shadow-lg text-center text-sm sm:text-base"
-            >
-              Seleccionar Logo
+        {/* Formulario con diseño premium - Completamente responsive */}
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6">
+          {/* Campo Nombre */}
+          <div className="group">
+            <label className="block text-xs sm:text-sm md:text-base font-medium text-yellow-400 mb-1 sm:mb-2">
+              Nombre de la Floristería
             </label>
-            <span className="text-gray-400 text-xs sm:text-sm w-full sm:w-auto text-center sm:text-left">
-              {form.logo ? form.logo.name : 'Sin archivos seleccionados'}
-            </span>
+            <input
+              type="text"
+              name="nombre"
+              value={form.nombre}
+              onChange={handleChange}
+              className="w-full px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
+                       text-white placeholder-gray-400 focus:border-yellow-400 
+                       focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
+                       backdrop-blur-sm text-xs sm:text-sm md:text-base
+                       min-h-[40px] sm:min-h-[44px] md:min-h-[48px]"
+              placeholder="Ej: Flores del Paraíso"
+              required
+            />
           </div>
-        </div>
 
-        {/* Botones de acción - Responsive */}
-        <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 pt-4 sm:pt-6">
-          <button
-            type="submit"
-            className="w-full sm:flex-1 px-4 sm:px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 
-                     hover:from-yellow-600 hover:to-yellow-700 text-gray-900 font-bold 
-                     rounded-lg transition-all duration-300 transform hover:scale-105 
-                     hover:shadow-xl focus:ring-4 focus:ring-yellow-400/30 text-sm sm:text-base"
-          >
-            ✨ {id ? 'Actualizar' : 'Crear'} Floristería
-          </button>
-          
-          <button
-            type="button"
-            onClick={() => navigate('/admin/floristerias')}
-            className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold 
-                     rounded-lg transition-all duration-300 hover:shadow-lg text-sm sm:text-base"
-          >
-            Cancelar
-          </button>
-        </div>
-      </form>
+          {/* Campo Descripción */}
+          <div className="group">
+            <label className="block text-xs sm:text-sm md:text-base font-medium text-yellow-400 mb-1 sm:mb-2">
+              Descripción
+            </label>
+            <textarea
+              name="descripcion"
+              value={form.descripcion}
+              onChange={handleChange}
+              rows="3"
+              className="w-full px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
+                       text-white placeholder-gray-400 focus:border-yellow-400 
+                       focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
+                       backdrop-blur-sm resize-none text-xs sm:text-sm md:text-base
+                       min-h-[80px] sm:min-h-[88px] md:min-h-[96px]"
+              placeholder="Describe los servicios y especialidades de la floristería..."
+              required
+            />
+          </div>
+
+          {/* Campo URL */}
+          <div className="group">
+            <label className="block text-xs sm:text-sm md:text-base font-medium text-yellow-400 mb-1 sm:mb-2">
+              URL del Sitio Web
+            </label>
+            <input
+              type="url"
+              name="url"
+              value={form.url}
+              onChange={handleChange}
+              className="w-full px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 bg-white/10 border-2 border-gray-600 rounded-lg 
+                       text-white placeholder-gray-400 focus:border-yellow-400 
+                       focus:ring-2 focus:ring-yellow-400/20 transition-all duration-300
+                       backdrop-blur-sm text-xs sm:text-sm md:text-base
+                       min-h-[40px] sm:min-h-[44px] md:min-h-[48px]"
+              placeholder="https://www.ejemplo.com"
+              required
+            />
+          </div>
+
+          {/* Campo Logo - Completamente responsive */}
+          <div className="group">
+            <label className="block text-xs sm:text-sm md:text-base font-medium text-yellow-400 mb-1 sm:mb-2">
+              Logo de la Floristería
+            </label>
+            <div className="flex flex-col space-y-2 sm:space-y-3 md:flex-row md:space-y-0 md:space-x-3 lg:space-x-4">
+              <input
+                type="file"
+                name="logo"
+                onChange={handleChange}
+                accept="image/*"
+                className="hidden"
+                id="logo-upload"
+              />
+              <label
+                htmlFor="logo-upload"
+                className="w-full md:w-auto px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-900 
+                         font-semibold rounded-lg cursor-pointer transition-all duration-300
+                         transform hover:scale-105 hover:shadow-lg text-center text-xs sm:text-sm md:text-base
+                         min-h-[40px] sm:min-h-[44px] md:min-h-[48px] flex items-center justify-center"
+              >
+                Seleccionar Logo
+              </label>
+              <span className="text-gray-400 text-xs sm:text-sm w-full md:w-auto text-center md:text-left flex items-center justify-center md:justify-start
+                             min-h-[40px] sm:min-h-[44px] md:min-h-[48px] px-2">
+                {form.logo ? form.logo.name : 'Sin archivos seleccionados'}
+              </span>
+            </div>
+          </div>
+
+          {/* Botones de acción - Completamente responsive */}
+          <div className="flex flex-col space-y-2 sm:space-y-3 md:flex-row md:space-y-0 md:space-x-3 lg:space-x-4 pt-3 sm:pt-4 md:pt-5 lg:pt-6">
+            <button
+              type="submit"
+              className="w-full md:flex-1 px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 
+                       hover:from-yellow-600 hover:to-yellow-700 text-gray-900 font-bold 
+                       rounded-lg transition-all duration-300 transform hover:scale-105 
+                       hover:shadow-xl focus:ring-4 focus:ring-yellow-400/30 text-xs sm:text-sm md:text-base
+                       min-h-[44px] sm:min-h-[48px] md:min-h-[52px] flex items-center justify-center"
+            >
+              ✨ {id ? 'Actualizar' : 'Crear'} Floristería
+            </button>
+            
+            <button
+              type="button"
+              onClick={() => navigate('/admin/floristerias')}
+              className="w-full md:w-auto px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold 
+                       rounded-lg transition-all duration-300 hover:shadow-lg text-xs sm:text-sm md:text-base
+                       min-h-[44px] sm:min-h-[48px] md:min-h-[52px] flex items-center justify-center"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
-);
-// ... existing code ...
+  );
 }
