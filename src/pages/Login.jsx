@@ -93,7 +93,7 @@ export default function Login() {
               🌸 Bienvenido a Panel Admin
             </h1>
             <p className="text-purple-200 text-lg">
-              El puente más hermoso hacia la magia floral
+              Administrador y Gestionamiento de Flores.
             </p>
           </div>
 
