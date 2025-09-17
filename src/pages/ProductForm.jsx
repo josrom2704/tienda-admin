@@ -1,553 +1,428 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { getAxiosInstance } from '../api';
-import { Plus, X, Check } from 'lucide-react';
+// src/pages/ProductForm.jsx
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Upload, Plus, X, Check, Flower, Sparkles } from 'lucide-react';
+import api from '../api';
 
-/**
- * Formulario para crear o editar un arreglo/producto. Recibe un parámetro
- * opcional `id` para editar, y lee el parámetro de consulta `floristeria`
- * para asociar el producto a una floristería. Incluye campos para nombre,
- * descripción, precio, stock, categorías múltiples e imagen.
- */
-export default function ProductForm() {
-  const { token } = useAuth();
-  const { id } = useParams();
-  const [searchParams] = useSearchParams();
+const ProductForm = () => {
   const navigate = useNavigate();
-  const floristeriaFromQuery = searchParams.get('floristeria');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [categorias, setCategorias] = useState([]);
-  const [loadingCategorias, setLoadingCategorias] = useState(false);
-  const [showNewCategoryForm, setShowNewCategoryForm] = useState(false);
-  const [newCategory, setNewCategory] = useState({ nombre: '', descripcion: '', icono: '🌸' });
-  const [form, setForm] = useState({
+  const [floristerias, setFloristerias] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
     precio: '',
     stock: '',
-    categorias: [], // ✨ CAMBIO: Ahora es un array
-    imagen: null,
-    floristeria: floristeriaFromQuery || ''
+    floristeria: '',
+    imagen: null
   });
 
-  // ✨ NUEVO: Cargar categorías desde el backend
+  // ✅ NUEVO: Cargar categorías al montar el componente
   useEffect(() => {
-    fetchCategorias();
-  }, [token]);
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get('/categorias');
+        setCategories(response.data);
+        console.log('✅ Categorías cargadas:', response.data.length);
+      } catch (error) {
+        console.error('❌ Error cargando categorías:', error);
+      }
+    };
 
-  // Cargar datos de producto existente
-  useEffect(() => {
-    if (id) {
-      (async () => {
-        try {
-          const axiosInstance = getAxiosInstance(token);
-          const res = await axiosInstance.get(`/flores/${id}`);
-          const { nombre, descripcion, precio, stock, categorias, categoria, floristeria } = res.data;
-          
-          // ✨ NUEVO: Manejar categorías múltiples
-          let categoriasArray = [];
-          if (categorias && Array.isArray(categorias)) {
-            categoriasArray = categorias.map(c => c._id || c);
-          } else if (categoria) {
-            // Compatibilidad hacia atrás: buscar categoría por nombre
-            const categoriaDoc = categorias.find(c => c.nombre === categoria);
-            if (categoriaDoc) {
-              categoriasArray = [categoriaDoc._id];
-            }
-          }
-          
-          setForm({
-            nombre,
-            descripcion,
-            precio,
-            stock,
-            categorias: categoriasArray,
-            imagen: null,
-            floristeria
-          });
-        } catch (error) {
-          console.error(error);
-        }
-      })();
-    }
-  }, [id, token]);
+    const fetchFloristerias = async () => {
+      try {
+        const response = await api.get('/floristerias');
+        setFloristerias(response.data);
+        console.log('✅ Floristerías cargadas:', response.data.length);
+      } catch (error) {
+        console.error('❌ Error cargando floristerías:', error);
+      }
+    };
 
-  // ✨ NUEVO: Función para cargar categorías
-  const fetchCategorias = async () => {
-    try {
-      setLoadingCategorias(true);
-      const axiosInstance = getAxiosInstance(token);
-      const res = await axiosInstance.get('/categorias');
-      setCategorias(res.data);
-    } catch (error) {
-      console.error('Error al cargar categorías:', error);
-      // Fallback a categorías hardcodeadas si el backend no está listo
-      setCategorias([
-        { _id: '1', nombre: 'Canastas con vino', icono: '🍷' },
-        { _id: '2', nombre: 'Canastas con whisky', icono: '🥃' },
-        { _id: '3', nombre: 'Canastas sin licor', icono: '🌺' },
-        { _id: '4', nombre: 'Regalos navideños', icono: '🎄' },
-        { _id: '5', nombre: 'Detalles pequeños', icono: '🎁' },
-        { _id: '6', nombre: 'Canastas frutales', icono: '🍎' },
-        { _id: '7', nombre: 'Flores', icono: '🌸' }
-      ]);
-    } finally {
-      setLoadingCategorias(false);
-    }
-  };
-
-  // ✨ NUEVO: Función para crear nueva categoría
-  const handleCreateCategory = async (e) => {
-    e.preventDefault();
-    if (!newCategory.nombre.trim()) return;
-
-    try {
-      const axiosInstance = getAxiosInstance(token);
-      const res = await axiosInstance.post('/categorias', newCategory);
-      
-      // Agregar la nueva categoría a la lista
-      setCategorias([...categorias, res.data]);
-      
-      // Seleccionar automáticamente la nueva categoría
-      setForm({
-        ...form,
-        categorias: [...form.categorias, res.data._id]
-      });
-      
-      // Limpiar formulario y cerrar
-      setNewCategory({ nombre: '', descripcion: '', icono: '🌸' });
-      setShowNewCategoryForm(false);
-    } catch (error) {
-      console.error('Error al crear categoría:', error);
-      setError('Error al crear la nueva categoría');
-    }
-  };
-
-  // ✨ NUEVO: Función para manejar selección de categorías
-  const handleCategoryChange = (categoriaId) => {
-    const isSelected = form.categorias.includes(categoriaId);
-    if (isSelected) {
-      // Remover categoría
-      setForm({
-        ...form,
-        categorias: form.categorias.filter(id => id !== categoriaId)
-      });
-    } else {
-      // Agregar categoría
-      setForm({
-        ...form,
-        categorias: [...form.categorias, categoriaId]
-      });
-    }
-  };
+    fetchCategories();
+    fetchFloristerias();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     
-    if (files) {
-      const file = files[0];
-      
-      // Validación de imagen
-      if (name === 'imagen') {
-        // Verificar tipo de archivo
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-        if (!allowedTypes.includes(file.type)) {
-          setError('Solo se permiten archivos de imagen (JPEG, PNG, GIF, WebP)');
+    if (name === 'imagen') {
+      if (files && files[0]) {
+        const file = files[0];
+        // Validar tipo de archivo
+        if (!file.type.startsWith('image/')) {
+          setError('Por favor selecciona un archivo de imagen válido');
           return;
         }
-        
-        // Verificar tamaño (5MB máximo)
-        const maxSize = 5 * 1024 * 1024; // 5MB
-        if (file.size > maxSize) {
+        // Validar tamaño (5MB máximo)
+        if (file.size > 5 * 1024 * 1024) {
           setError('La imagen debe ser menor a 5MB');
           return;
         }
-        
-        setError(''); // Limpiar errores previos
+        setFormData(prev => ({ ...prev, [name]: files[0] }));
+        setError('');
       }
-      
-      setForm({ ...form, [name]: file });
     } else {
-      setForm({ ...form, [name]: value });
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  // ✅ NUEVO: Manejar selección de categorías
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategories(prev => {
+      if (prev.includes(categoryId)) {
+        return prev.filter(id => id !== categoryId);
+      } else {
+        return [...prev, categoryId];
+      }
+    });
+  };
+
+  // ✅ NUEVO: Crear nueva categoría
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    
+    try {
+      const response = await api.post('/categorias', {
+        nombre: newCategoryName.trim(),
+        descripcion: `Categoría ${newCategoryName.trim()}`,
+        icono: '🌸',
+        floristeria: formData.floristeria
+      });
+      
+      const newCategory = response.data;
+      setCategories(prev => [...prev, newCategory]);
+      setSelectedCategories(prev => [...prev, newCategory._id]);
+      setNewCategoryName('');
+      console.log('✅ Nueva categoría creada:', newCategory.nombre);
+    } catch (error) {
+      console.error('❌ Error creando categoría:', error);
+      setError('Error al crear la nueva categoría');
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // ✨ ACTUALIZADO: Validación para categorías múltiples
-    if (!form.nombre || !form.precio || !form.stock || form.categorias.length === 0 || !form.floristeria) {
-      setError('Por favor, completa todos los campos obligatorios y selecciona al menos una categoría');
-      return;
-    }
-
     setLoading(true);
     setError('');
-    
-    const formData = new FormData();
-    
-    // Agregar campos básicos
-    formData.append('nombre', form.nombre);
-    formData.append('descripcion', form.descripcion);
-    formData.append('precio', form.precio);
-    formData.append('stock', form.stock);
-    formData.append('floristeria', form.floristeria);
-    
-    // ✨ NUEVO: Agregar categorías múltiples
-    form.categorias.forEach(categoriaId => {
-      formData.append('categorias', categoriaId);
-    });
-    
-    // Agregar imagen si existe
-    if (form.imagen) {
-      formData.append('imagen', form.imagen, form.imagen.name);
-    }
-    
+
     try {
-      const axiosInstance = getAxiosInstance(token);
+      const submitData = new FormData();
+      submitData.append('nombre', formData.nombre);
+      submitData.append('descripcion', formData.descripcion);
+      submitData.append('precio', formData.precio);
+      submitData.append('stock', formData.stock);
+      submitData.append('floristeria', formData.floristeria);
       
-      if (id) {
-        await axiosInstance.put(`/flores/${id}`, formData, {
-          headers: { 
-            'Content-Type': 'multipart/form-data',
-            'Accept': 'application/json'
-          }
-        });
-      } else {
-        await axiosInstance.post('/flores', formData, {
-          headers: { 
-            'Content-Type': 'multipart/form-data',
-            'Accept': 'application/json'
-          }
+      // ✅ NUEVO: Enviar categorías múltiples
+      if (selectedCategories.length > 0) {
+        selectedCategories.forEach(categoryId => {
+          submitData.append('categorias', categoryId);
         });
       }
       
-      navigate(`/admin/productos?floristeria=${form.floristeria}`);
+      if (formData.imagen) {
+        submitData.append('imagen', formData.imagen);
+      }
+
+      const response = await api.post('/flores', submitData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('✅ Producto creado exitosamente:', response.data);
+      navigate('/admin/productos');
     } catch (error) {
-      console.error('Error en la operación:', error);
-      setError(
-        error.response?.data?.message || 
-        error.message || 
-        'Error al procesar la solicitud.'
-      );
+      console.error('❌ Error creando producto:', error);
+      setError(error.response?.data?.message || 'Error al crear el producto');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 p-6">
-      <div className="max-w-2xl mx-auto">
-        {/* Header con glass effect */}
-        <div className="backdrop-blur-md bg-white/30 rounded-3xl p-6 mb-8 shadow-xl border border-white/20">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-2">
-            {id ? '✏️ Editar' : '✨ Añadir'} Arreglo
-          </h1>
-          <p className="text-gray-600">Completa los datos del nuevo arreglo floral</p>
-        </div>
-        
-        {/* Mensaje de error */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-            <div className="flex items-center">
-              <span className="text-xl mr-2">⚠️</span>
-              <span>{error}</span>
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
+      {/* Partículas de fondo */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-2 h-2 bg-white/20 rounded-full animate-pulse"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${2 + Math.random() * 3}s`
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="max-w-4xl mx-auto relative z-10">
+        {/* Header */}
+        <div className="mb-8">
+          <button
+            onClick={() => navigate('/admin/productos')}
+            className="flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-4"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Volver a Productos
+          </button>
+          
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg">
+                <Flower className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-white">Crear Nuevo Producto</h1>
             </div>
+            <p className="text-white/70">Agrega un nuevo arreglo floral a tu tienda</p>
           </div>
-        )}
-        
+        </div>
+
         {/* Formulario */}
-        <div className="backdrop-blur-md bg-white/40 rounded-2xl p-8 shadow-xl border border-white/30">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-yellow-400" />
+              Información Básica
+            </h2>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Nombre */}
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Nombre del Arreglo</label>
+                <label className="block text-white/80 text-sm font-medium mb-2">
+                  Nombre del Producto *
+                </label>
                 <input
                   type="text"
                   name="nombre"
-                  value={form.nombre}
+                  value={formData.nombre}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Ej: Canasta de Rosas"
                   required
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Ej: Ramo de Rosas Rojas"
                 />
               </div>
-              
-              {/* ✨ NUEVO: Campo de floristería si no viene en la URL */}
-              {!floristeriaFromQuery && (
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Floristería</label>
-                  <select
-                    name="floristeria"
-                    value={form.floristeria}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    required
-                  >
-                    <option value="">-- Seleccione floristería --</option>
-                    <option value="floristeria1">🏪 Floristería 1</option>
-                    <option value="floristeria2">🏪 Floristería 2</option>
-                    <option value="floristeria3">🏪 Floristería 3</option>
-                  </select>
-                </div>
-              )}
-            </div>
-            
-            {/* ✨ NUEVO: Campo de categorías múltiples */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <label className="block text-gray-700 font-semibold">
-                  Categorías <span className="text-red-500">*</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowNewCategoryForm(!showNewCategoryForm)}
-                  className="flex items-center gap-2 px-3 py-1 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm"
-                >
-                  <Plus size={16} />
-                  Nueva Categoría
-                </button>
-              </div>
-              
-              {/* Formulario para nueva categoría */}
-              {showNewCategoryForm && (
-                <div className="mb-4 p-4 bg-purple-50 rounded-xl border border-purple-200">
-                  <h4 className="font-semibold text-purple-800 mb-3">Crear Nueva Categoría</h4>
-                  <form onSubmit={handleCreateCategory} className="space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <input
-                        type="text"
-                        placeholder="Nombre de la categoría"
-                        value={newCategory.nombre}
-                        onChange={(e) => setNewCategory({ ...newCategory, nombre: e.target.value })}
-                        className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-500"
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder="Descripción (opcional)"
-                        value={newCategory.descripcion}
-                        onChange={(e) => setNewCategory({ ...newCategory, descripcion: e.target.value })}
-                        className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-500"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Icono (ej: 🌸)"
-                        value={newCategory.icono}
-                        onChange={(e) => setNewCategory({ ...newCategory, icono: e.target.value })}
-                        className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-500"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        type="submit"
-                        className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                      >
-                        <Check size={16} />
-                        Crear
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowNewCategoryForm(false)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                      >
-                        <X size={16} />
-                        Cancelar
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              )}
-              
-              {/* Lista de categorías disponibles */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {loadingCategorias ? (
-                  <div className="col-span-full text-center py-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mx-auto"></div>
-                    <p className="text-gray-500 mt-2">Cargando categorías...</p>
-                  </div>
-                ) : (
-                  categorias.map((categoria) => (
-                    <label
-                      key={categoria._id}
-                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                        form.categorias.includes(categoria._id)
-                          ? 'border-purple-500 bg-purple-50 text-purple-700'
-                          : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={form.categorias.includes(categoria._id)}
-                        onChange={() => handleCategoryChange(categoria._id)}
-                        className="sr-only"
-                      />
-                      <span className="text-xl">{categoria.icono}</span>
-                      <span className="text-sm font-medium">{categoria.nombre}</span>
-                      {form.categorias.includes(categoria._id) && (
-                        <Check size={16} className="text-purple-500 ml-auto" />
-                      )}
-                    </label>
-                  ))
-                )}
-              </div>
-              
-              {/* Mostrar categorías seleccionadas */}
-              {form.categorias.length > 0 && (
-                <div className="mt-3">
-                  <p className="text-sm text-gray-600 mb-2">
-                    Categorías seleccionadas ({form.categorias.length}):
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {form.categorias.map((categoriaId) => {
-                      const categoria = categorias.find(c => c._id === categoriaId);
-                      return categoria ? (
-                        <span
-                          key={categoriaId}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
-                        >
-                          {categoria.icono} {categoria.nombre}
-                        </span>
-                      ) : null;
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">Descripción</label>
-              <textarea
-                name="descripcion"
-                value={form.descripcion}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                rows="3"
-                placeholder="Describe el arreglo floral..."
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              {/* Precio */}
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Precio ($)</label>
+                <label className="block text-white/80 text-sm font-medium mb-2">
+                  Precio *
+                </label>
                 <input
                   type="number"
-                  step="0.01"
                   name="precio"
-                  value={form.precio}
+                  value={formData.precio}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  placeholder="0.00"
                   required
+                  min="0"
+                  step="0.01"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="0.00"
                 />
               </div>
-              
+
+              {/* Stock */}
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Stock Disponible</label>
+                <label className="block text-white/80 text-sm font-medium mb-2">
+                  Stock *
+                </label>
                 <input
                   type="number"
                   name="stock"
-                  value={form.stock}
+                  value={formData.stock}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  placeholder="0"
                   required
+                  min="0"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="0"
                 />
               </div>
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">Imagen del Arreglo</label>
-              <div className={`border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 ${
-                form.imagen 
-                  ? 'border-green-400 bg-green-50' 
-                  : 'border-gray-300 hover:border-purple-400'
-              }`}>
-                <input
-                  type="file"
-                  name="imagen"
-                  accept="image/*"
+
+              {/* Floristería */}
+              <div>
+                <label className="block text-white/80 text-sm font-medium mb-2">
+                  Floristería *
+                </label>
+                <select
+                  name="floristeria"
+                  value={formData.floristeria}
                   onChange={handleChange}
-                  className="hidden"
-                  id="imagen-input"
+                  required
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="" className="bg-gray-800">Seleccionar Floristería</option>
+                  {floristerias.map(floristeria => (
+                    <option key={floristeria._id} value={floristeria._id} className="bg-gray-800">
+                      {floristeria.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Descripción */}
+            <div className="mt-6">
+              <label className="block text-white/80 text-sm font-medium mb-2">
+                Descripción *
+              </label>
+              <textarea
+                name="descripcion"
+                value={formData.descripcion}
+                onChange={handleChange}
+                required
+                rows={4}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                placeholder="Describe el producto, sus características y detalles especiales..."
+              />
+            </div>
+          </div>
+
+          {/* ✅ NUEVO: Sección de Categorías */}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-green-400" />
+              Categorías
+            </h2>
+            
+            {/* Categorías existentes */}
+            <div className="mb-6">
+              <label className="block text-white/80 text-sm font-medium mb-3">
+                Seleccionar Categorías
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {categories.map(category => (
+                  <label key={category._id} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.includes(category._id)}
+                      onChange={() => handleCategoryChange(category._id)}
+                      className="w-4 h-4 text-purple-600 bg-white/10 border-white/20 rounded focus:ring-purple-500 focus:ring-2"
+                    />
+                    <span className="text-white/80 text-sm">{category.nombre}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Crear nueva categoría */}
+            <div className="border-t border-white/20 pt-6">
+              <label className="block text-white/80 text-sm font-medium mb-3">
+                Crear Nueva Categoría
+              </label>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="Nombre de la nueva categoría"
+                  className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
-                <label htmlFor="imagen-input" className="cursor-pointer">
-                  <div className="text-4xl mb-2">
-                    {form.imagen ? '🖼️' : '📸'}
+                <button
+                  type="button"
+                  onClick={handleCreateCategory}
+                  disabled={!newCategoryName.trim() || !formData.floristeria}
+                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Crear
+                </button>
+              </div>
+              {!formData.floristeria && (
+                <p className="text-yellow-400 text-sm mt-2">
+                  ⚠️ Selecciona una floristería para crear categorías
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Imagen */}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+              <Upload className="w-5 h-5 text-blue-400" />
+              Imagen del Producto
+            </h2>
+            
+            <div className="space-y-4">
+              <div className="flex items-center justify-center w-full">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-white/20 border-dashed rounded-lg cursor-pointer bg-white/5 hover:bg-white/10 transition-colors">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Upload className="w-8 h-8 mb-2 text-white/60" />
+                    <p className="mb-2 text-sm text-white/60">
+                      <span className="font-semibold">Haz clic para subir</span> o arrastra y suelta
+                    </p>
+                    <p className="text-xs text-white/40">PNG, JPG, JPEG (MAX. 5MB)</p>
                   </div>
-                  
-                  {form.imagen ? (
-                    <div className="space-y-2">
-                      <p className="text-green-700 font-medium">
-                        ✅ Imagen seleccionada
-                      </p>
-                      <p className="text-green-600 text-sm">
-                        {form.imagen.name}
-                      </p>
-                      <p className="text-green-500 text-xs">
-                        {(form.imagen.size / 1024 / 1024).toFixed(2)} MB • {form.imagen.type}
-                      </p>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="text-gray-600 mb-2">
-                        Haz clic para seleccionar una imagen
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        PNG, JPG, GIF, WebP hasta 5MB
-                      </p>
-                    </div>
-                  )}
+                  <input
+                    type="file"
+                    name="imagen"
+                    onChange={handleChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
                 </label>
               </div>
               
-              {/* Botón para quitar imagen */}
-              {form.imagen && (
-                <div className="mt-3 text-center">
+              {formData.imagen && (
+                <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                  <Check className="w-5 h-5 text-green-400" />
+                  <span className="text-white/80 text-sm">{formData.imagen.name}</span>
                   <button
                     type="button"
-                    onClick={() => setForm({ ...form, imagen: null })}
-                    className="text-red-600 hover:text-red-800 text-sm underline"
+                    onClick={() => setFormData(prev => ({ ...prev, imagen: null }))}
+                    className="ml-auto p-1 hover:bg-white/10 rounded transition-colors"
                   >
-                    🗑️ Quitar imagen
+                    <X className="w-4 h-4 text-white/60" />
                   </button>
                 </div>
               )}
             </div>
-            
-            <div className="flex items-center justify-between pt-6">
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200"
-              >
-                ← Volver
-              </button>
-              
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative inline-flex items-center px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-2xl hover:from-pink-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Procesando...
-                  </>
-                ) : (
-                  <>
-                    <span className="mr-2">{id ? '💾' : '✨'}</span>
-                    {id ? 'Actualizar' : 'Crear'} Arreglo
-                  </>
-                )}
-                <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm group-hover:blur-md transition-all duration-300"></div>
-              </button>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4">
+              <p className="text-red-200">{error}</p>
             </div>
-          </form>
-        </div>
+          )}
+
+          {/* Botones */}
+          <div className="flex gap-4">
+            <button
+              type="button"
+              onClick={() => navigate('/admin/productos')}
+              className="flex-1 px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors border border-white/20"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Creando...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  Crear Producto
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
-}
+};
+
+export default ProductForm;
