@@ -1,3 +1,4 @@
+// src/api/index.js
 import axios from 'axios';
 
 /**
@@ -20,3 +21,20 @@ export function getAxiosInstance(token) {
   }
   return instance;
 }
+
+// ✅ AGREGAR ESTAS LÍNEAS AL FINAL:
+// Exportación por defecto para compatibilidad
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'https://flores-backend-px2c.onrender.com/api'
+});
+
+// Interceptor para agregar token automáticamente
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export default api;
