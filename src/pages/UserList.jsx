@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAxiosInstance } from '../api';
+import api from '../api';
 import { Trash2, Edit, Plus, User, Crown, Store, Shield } from 'lucide-react';
 
 /**
@@ -22,8 +22,7 @@ export default function UserList() {
   const fetchUsers = async () => {
     setLoading(true);
       try {
-        const axiosInstance = getAxiosInstance(token);
-        const res = await axiosInstance.get('/users');
+        const res = await api.get('/users');
         setUsers(res.data);
       } catch (error) {
         console.error(error);
@@ -40,8 +39,7 @@ export default function UserList() {
 
     setDeletingId(userId);
     try {
-      const axiosInstance = getAxiosInstance(token);
-      await axiosInstance.delete(`/users/${userId}`);
+      await api.delete(`/users/${userId}`);
       
       // Actualizar la lista
       setUsers(users.filter(u => u._id !== userId));

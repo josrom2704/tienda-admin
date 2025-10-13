@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAxiosInstance } from '../api';
+import api from '../api';
 
 /**
  * Formulario para crear un nuevo usuario. Permite seleccionar rol y
@@ -21,8 +21,7 @@ export default function UserForm() {
   useEffect(() => {
     (async () => {
       try {
-        const axiosInstance = getAxiosInstance(token);
-        const res = await axiosInstance.get('/floristerias');
+        const res = await api.get('/floristerias');
         setFloristerias(res.data);
       } catch (error) {
         console.error(error);
@@ -38,8 +37,7 @@ export default function UserForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const axiosInstance = getAxiosInstance(token);
-      await axiosInstance.post('/users', form);
+      await api.post('/users', form);
       navigate('/admin/usuarios');
     } catch (error) {
       console.error(error);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAxiosInstance } from '../api';
+import api from '../api';
 
 /**
  * Formulario para añadir o editar una floristería. Si el parámetro `id`
@@ -23,8 +23,7 @@ export default function FloristeriaForm() {
     if (id) {
       (async () => {
         try {
-          const axiosInstance = getAxiosInstance(token);
-          const res = await axiosInstance.get(`/floristerias/${id}`);
+          const res = await api.get(`/floristerias/${id}`);
           const { nombre, descripcion, url } = res.data;
           setForm({ nombre, descripcion, url, logo: null });
         } catch (error) {
@@ -51,13 +50,12 @@ export default function FloristeriaForm() {
     formData.append('url', form.url);
     if (form.logo) formData.append('logo', form.logo);
     try {
-      const axiosInstance = getAxiosInstance(token);
       if (id) {
-        await axiosInstance.put(`/floristerias/${id}`, formData, {
+        await api.put(`/floristerias/${id}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
       } else {
-        await axiosInstance.post('/floristerias', formData, {
+        await api.post('/floristerias', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
       }

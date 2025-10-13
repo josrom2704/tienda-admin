@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAxiosInstance } from '../api';
+import api from '../api';
 import { Trash2, Edit, Store, Flower, Sparkles, Crown, Star } from 'lucide-react';
 
 /**
@@ -21,8 +21,7 @@ export default function FloristeriaList() {
   const fetchFloristerias = async () => {
       try {
       setLoading(true);
-        const axiosInstance = getAxiosInstance(token);
-        const res = await axiosInstance.get('/floristerias');
+        const res = await api.get('/floristerias');
         setFloristerias(res.data);
       } catch (error) {
       console.error('Error al cargar floristerías:', error);
@@ -38,8 +37,7 @@ export default function FloristeriaList() {
 
     try {
       setLoading(true);
-      const axiosInstance = getAxiosInstance(token);
-      await axiosInstance.delete(`/floristerias/${id}`);
+      await api.delete(`/floristerias/${id}`);
       
       // Recargar la lista después del borrado
       await fetchFloristerias();

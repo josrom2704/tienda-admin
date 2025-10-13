@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAxiosInstance } from '../api';
+import api from '../api';
 import { 
   Trash2, 
   Edit, 
@@ -40,8 +40,7 @@ export default function ProductList({ floristeriaId }) {
     if (!floristeriaId) {
       (async () => {
         try {
-          const axiosInstance = getAxiosInstance(token);
-          const res = await axiosInstance.get('/floristerias');
+          const res = await api.get('/floristerias');
           setFloristerias(res.data);
         } catch (error) {
           console.error('Error cargando floristerías:', error);
@@ -70,10 +69,9 @@ export default function ProductList({ floristeriaId }) {
   const fetchProductos = async () => {
     setLoading(true);
     try {
-      const axiosInstance = getAxiosInstance(token);
       console.log('🔄 Cargando productos para floristería:', selectedFloristeria);
       
-      const res = await axiosInstance.get(`/flores/floristeria/${selectedFloristeria}`);
+      const res = await api.get(`/flores/floristeria/${selectedFloristeria}`);
       console.log('✅ Productos cargados:', res.data);
       
       setProductos(res.data);
@@ -97,10 +95,8 @@ export default function ProductList({ floristeriaId }) {
     console.log('🗑️ Intentando eliminar producto:', productId);
     
     try {
-      const axiosInstance = getAxiosInstance(token);
-      
       // Hacer la petición DELETE
-      const response = await axiosInstance.delete(`/flores/${productId}`);
+      const response = await api.delete(`/flores/${productId}`);
       console.log('✅ Respuesta del backend:', response);
       
       if (response.status === 200 || response.status === 204) {
@@ -158,12 +154,10 @@ export default function ProductList({ floristeriaId }) {
     console.log('🗑️ Iniciando borrado masivo de:', Array.from(selectedProducts));
     
     try {
-      const axiosInstance = getAxiosInstance(token);
-      
       // Eliminar productos uno por uno
       const deletePromises = Array.from(selectedProducts).map(async (productId) => {
         try {
-          const response = await axiosInstance.delete(`/flores/${productId}`);
+          const response = await api.delete(`/flores/${productId}`);
           console.log(`✅ Producto ${productId} eliminado:`, response.status);
           return { success: true, id: productId };
         } catch (error) {
@@ -351,16 +345,14 @@ export default function ProductList({ floristeriaId }) {
                   console.log('🧪 TEST BACKEND - Producto:', testProduct);
                   
                   try {
-                    const axiosInstance = getAxiosInstance(token);
-                    
                     // Test 1: Verificar que el producto existe
                     console.log('🧪 TEST 1: Verificando que el producto existe...');
-                    const getResponse = await axiosInstance.get(`/flores/${testProduct._id}`);
+                    const getResponse = await api.get(`/flores/${testProduct._id}`);
                     console.log('✅ Producto existe:', getResponse.data);
                     
                     // Test 2: Intentar eliminar
                     console.log('🧪 TEST 2: Intentando eliminar...');
-                    const deleteResponse = await axiosInstance.delete(`/flores/${testProduct._id}`);
+                    const deleteResponse = await api.delete(`/flores/${testProduct._id}`);
                     console.log('✅ Respuesta DELETE completa:', deleteResponse);
                     console.log('📊 Status:', deleteResponse.status);
                     console.log('📊 Headers:', deleteResponse.headers);
@@ -370,14 +362,14 @@ export default function ProductList({ floristeriaId }) {
                     console.log('🧪 TEST 3: Verificando si se eliminó...');
                     setTimeout(async () => {
                       try {
-                        const verifyResponse = await axiosInstance.get(`/flores/${testProduct._id}`);
+                        const verifyResponse = await api.get(`/flores/${testProduct._id}`);
                         console.log('❌ PRODUCTO SIGUE EXISTIENDO:', verifyResponse.data);
                         showMessage('error', 'PRODUCTO NO SE ELIMINÓ DEL BACKEND');
                         
                         // Test adicional: Intentar eliminar de nuevo
                         console.log('🧪 TEST 4: Intentando eliminar de nuevo...');
                         try {
-                          const secondDelete = await axiosInstance.delete(`/flores/${testProduct._id}`);
+                          const secondDelete = await api.delete(`/flores/${testProduct._id}`);
                           console.log('🔄 Segunda eliminación:', secondDelete.status);
                         } catch (secondError) {
                           console.log('🔄 Error en segunda eliminación:', secondError.response?.status);
