@@ -22,7 +22,6 @@ export function getAxiosInstance(token) {
   return instance;
 }
 
-// ✅ AGREGAR ESTAS LÍNEAS AL FINAL:
 // Exportación por defecto para compatibilidad
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'https://flores-backend-px2c.onrender.com/api'
