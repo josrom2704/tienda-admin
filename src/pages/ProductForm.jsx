@@ -9,30 +9,21 @@ const ProductForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [floristerias, setFloristerias] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [newCategoryName, setNewCategoryName] = useState('');
+  const [categorias, setCategorias] = useState([]);
+  const [newCategoriaName, setNewCategoriaName] = useState('');
+  const [selectedCategorias, setSelectedCategorias] = useState([]);
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
+    categoria: '',
     precio: '',
     stock: '',
     floristeria: '',
     imagen: null
   });
 
-  // ✅ NUEVO: Cargar categorías al montar el componente
+  // Cargar floristerías al montar el componente
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await api.get('/categorias');
-        setCategories(response.data);
-        console.log('✅ Categorías cargadas:', response.data.length);
-      } catch (error) {
-        console.error('❌ Error cargando categorías:', error);
-      }
-    };
-
     const fetchFloristerias = async () => {
       try {
         const response = await api.get('/floristerias');
@@ -43,9 +34,28 @@ const ProductForm = () => {
       }
     };
 
-    fetchCategories();
     fetchFloristerias();
   }, []);
+
+  // Cargar categorías cuando se selecciona una floristería
+  useEffect(() => {
+    const fetchCategorias = async () => {
+      if (!formData.floristeria) {
+        setCategorias([]);
+        return;
+      }
+
+      try {
+        const response = await api.get(`/categorias/floristeria/${formData.floristeria}`);
+        setCategorias(response.data);
+        console.log('✅ Categorías cargadas:', response.data.length);
+      } catch (error) {
+        console.error('❌ Error cargando categorías:', error);
+      }
+    };
+
+    fetchCategorias();
+  }, [formData.floristeria]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -71,39 +81,48 @@ const ProductForm = () => {
     }
   };
 
-  // ✅ NUEVO: Manejar selección de categorías
-  const handleCategoryChange = (categoryId) => {
-    setSelectedCategories(prev => {
-      if (prev.includes(categoryId)) {
-        return prev.filter(id => id !== categoryId);
+  // Manejar selección de categorías
+  const handleCategoriaToggle = (categoriaId) => {
+    setSelectedCategorias(prev => {
+      if (prev.includes(categoriaId)) {
+        return prev.filter(id => id !== categoriaId);
       } else {
-        return [...prev, categoryId];
+        return [...prev, categoriaId];
       }
     });
   };
 
-  // ✅ NUEVO: Crear nueva categoría
-  const handleCreateCategory = async () => {
-    if (!newCategoryName.trim()) return;
-    
+  // Crear nueva categoría
+  const handleCreateCategoria = async () => {
+    if (!newCategoriaName.trim()) {
+      setError('Por favor ingresa un nombre para la categoría');
+      return;
+    }
+
+    if (!formData.floristeria) {
+      setError('Por favor selecciona una floristería primero');
+      return;
+    }
+
     try {
       const response = await api.post('/categorias', {
-        nombre: newCategoryName.trim(),
-        descripcion: `Categoría ${newCategoryName.trim()}`,
-        icono: '🌸',
-        floristeria: formData.floristeria
+        nombre: newCategoriaName,
+        floristeria: formData.floristeria,
+        descripcion: `Categoría ${newCategoriaName}`,
+        icono: '🌸'
       });
-      
-      const newCategory = response.data;
-      setCategories(prev => [...prev, newCategory]);
-      setSelectedCategories(prev => [...prev, newCategory._id]);
-      setNewCategoryName('');
-      console.log('✅ Nueva categoría creada:', newCategory.nombre);
+
+      // Agregar la nueva categoría a la lista y seleccionarla
+      setCategorias(prev => [...prev, response.data]);
+      setSelectedCategorias(prev => [...prev, response.data._id]);
+      setNewCategoriaName('');
+      console.log('✅ Nueva categoría creada:', response.data);
     } catch (error) {
       console.error('❌ Error creando categoría:', error);
-      setError('Error al crear la nueva categoría');
+      setError(error.response?.data?.message || 'Error al crear la categoría');
     }
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -118,11 +137,9 @@ const ProductForm = () => {
       submitData.append('stock', formData.stock);
       submitData.append('floristeria', formData.floristeria);
       
-      // ✅ NUEVO: Enviar categorías múltiples
-      if (selectedCategories.length > 0) {
-        selectedCategories.forEach(categoryId => {
-          submitData.append('categorias', categoryId);
-        });
+      // Enviar categorías múltiples si hay seleccionadas
+      if (selectedCategorias.length > 0) {
+        submitData.append('categorias', JSON.stringify(selectedCategorias));
       }
       
       if (formData.imagen) {
@@ -245,6 +262,7 @@ const ProductForm = () => {
                 />
               </div>
 
+
               {/* Floristería */}
               <div>
                 <label className="block text-white/80 text-sm font-medium mb-2">
@@ -284,63 +302,64 @@ const ProductForm = () => {
             </div>
           </div>
 
-          {/* ✅ NUEVO: Sección de Categorías */}
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-green-400" />
-              Categorías
-            </h2>
-            
-            {/* Categorías existentes */}
-            <div className="mb-6">
-              <label className="block text-white/80 text-sm font-medium mb-3">
-                Seleccionar Categorías
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {categories.map(category => (
-                  <label key={category._id} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedCategories.includes(category._id)}
-                      onChange={() => handleCategoryChange(category._id)}
-                      className="w-4 h-4 text-purple-600 bg-white/10 border-white/20 rounded focus:ring-purple-500 focus:ring-2"
-                    />
-                    <span className="text-white/80 text-sm">{category.nombre}</span>
+          {/* Sección de Categorías */}
+          {formData.floristeria && (
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-yellow-400" />
+                Categorías
+              </h2>
+              
+              {/* Categorías existentes */}
+              {categorias.length > 0 && (
+                <div className="mb-6">
+                  <label className="block text-white/80 text-sm font-medium mb-3">
+                    Seleccionar Categorías
                   </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Crear nueva categoría */}
-            <div className="border-t border-white/20 pt-6">
-              <label className="block text-white/80 text-sm font-medium mb-3">
-                Crear Nueva Categoría
-              </label>
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  placeholder="Nombre de la nueva categoría"
-                  className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-                <button
-                  type="button"
-                  onClick={handleCreateCategory}
-                  disabled={!newCategoryName.trim() || !formData.floristeria}
-                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Crear
-                </button>
-              </div>
-              {!formData.floristeria && (
-                <p className="text-yellow-400 text-sm mt-2">
-                  ⚠️ Selecciona una floristería para crear categorías
-                </p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {categorias.map(categoria => (
+                      <label
+                        key={categoria._id}
+                        className="flex items-center gap-2 p-3 bg-white/5 border border-white/20 rounded-lg cursor-pointer hover:bg-white/10 transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedCategorias.includes(categoria._id)}
+                          onChange={() => handleCategoriaToggle(categoria._id)}
+                          className="w-4 h-4 text-purple-500 bg-white/10 border-white/20 rounded focus:ring-purple-500"
+                        />
+                        <span className="text-white/80 text-sm">{categoria.nombre}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               )}
+
+              {/* Crear nueva categoría */}
+              <div className="border-t border-white/20 pt-4">
+                <label className="block text-white/80 text-sm font-medium mb-3">
+                  Crear Nueva Categoría
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newCategoriaName}
+                    onChange={(e) => setNewCategoriaName(e.target.value)}
+                    className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Nombre de la nueva categoría"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCreateCategoria}
+                    className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-200 flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Crear
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Imagen */}
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
