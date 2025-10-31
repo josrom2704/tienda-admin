@@ -1,7 +1,7 @@
 // src/pages/ProductForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Upload, Plus, X, Check, Flower, Sparkles } from 'lucide-react';
+import { ArrowLeft, Upload, Plus, X, Check, Flower, Sparkles, Pencil, Trash2 } from 'lucide-react';
 import api from '../api';
 
 const ProductForm = () => {
@@ -12,6 +12,8 @@ const ProductForm = () => {
   const [categorias, setCategorias] = useState([]);
   const [newCategoriaName, setNewCategoriaName] = useState('');
   const [selectedCategorias, setSelectedCategorias] = useState([]);
+  const [editingCategoriaId, setEditingCategoriaId] = useState(null);
+  const [editingCategoriaName, setEditingCategoriaName] = useState('');
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -120,6 +122,52 @@ const ProductForm = () => {
     } catch (error) {
       console.error('❌ Error creando categoría:', error);
       setError(error.response?.data?.message || 'Error al crear la categoría');
+    }
+  };
+
+  // Iniciar edición de categoría
+  const handleStartEditCategoria = (categoria) => {
+    setEditingCategoriaId(categoria._id);
+    setEditingCategoriaName(categoria.nombre);
+  };
+
+  // Cancelar edición
+  const handleCancelEditCategoria = () => {
+    setEditingCategoriaId(null);
+    setEditingCategoriaName('');
+  };
+
+  // Guardar edición
+  const handleSaveEditCategoria = async () => {
+    if (!editingCategoriaId || !editingCategoriaName.trim()) return;
+    try {
+      const res = await api.put(`/categorias/${editingCategoriaId}`, {
+        nombre: editingCategoriaName,
+        slug: editingCategoriaName.toLowerCase().replace(/\s+/g, '-')
+      });
+      setCategorias(prev => prev.map(c => (c._id === editingCategoriaId ? res.data : c)));
+      setEditingCategoriaId(null);
+      setEditingCategoriaName('');
+    } catch (error) {
+      console.error('❌ Error actualizando categoría:', error);
+      setError(error.response?.data?.message || 'Error al actualizar la categoría');
+    }
+  };
+
+  // Eliminar categoría
+  const handleDeleteCategoria = async (categoriaId) => {
+    if (!window.confirm('¿Eliminar esta categoría? Esta acción no se puede deshacer.')) return;
+    try {
+      await api.delete(`/categorias/${categoriaId}`);
+      setCategorias(prev => prev.filter(c => c._id !== categoriaId));
+      setSelectedCategorias(prev => prev.filter(id => id !== categoriaId));
+      if (editingCategoriaId === categoriaId) {
+        setEditingCategoriaId(null);
+        setEditingCategoriaName('');
+      }
+    } catch (error) {
+      console.error('❌ Error eliminando categoría:', error);
+      setError(error.response?.data?.message || 'Error al eliminar la categoría');
     }
   };
 
@@ -316,11 +364,11 @@ const ProductForm = () => {
                   <label className="block text-white/80 text-sm font-medium mb-3">
                     Seleccionar Categorías
                   </label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {categorias.map(categoria => (
-                      <label
+                      <div
                         key={categoria._id}
-                        className="flex items-center gap-2 p-3 bg-white/5 border border-white/20 rounded-lg cursor-pointer hover:bg-white/10 transition-colors"
+                        className="flex items-center gap-3 p-3 bg-white/5 border border-white/20 rounded-lg"
                       >
                         <input
                           type="checkbox"
@@ -328,8 +376,53 @@ const ProductForm = () => {
                           onChange={() => handleCategoriaToggle(categoria._id)}
                           className="w-4 h-4 text-purple-500 bg-white/10 border-white/20 rounded focus:ring-purple-500"
                         />
-                        <span className="text-white/80 text-sm">{categoria.nombre}</span>
-                      </label>
+                        {editingCategoriaId === categoria._id ? (
+                          <>
+                            <input
+                              type="text"
+                              value={editingCategoriaName}
+                              onChange={(e) => setEditingCategoriaName(e.target.value)}
+                              className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleSaveEditCategoria}
+                              className="p-2 rounded bg-green-500/20 hover:bg-green-500/30 border border-green-400/40"
+                              title="Guardar"
+                            >
+                              <Check className="w-4 h-4 text-green-300" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleCancelEditCategoria}
+                              className="p-2 rounded bg-white/10 hover:bg-white/20 border border-white/20"
+                              title="Cancelar"
+                            >
+                              <X className="w-4 h-4 text-white/70" />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <span className="flex-1 text-white/80 text-sm">{categoria.nombre}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleStartEditCategoria(categoria)}
+                              className="p-2 rounded bg-white/10 hover:bg-white/20 border border-white/20"
+                              title="Editar"
+                            >
+                              <Pencil className="w-4 h-4 text-white/70" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCategoria(categoria._id)}
+                              className="p-2 rounded bg-red-500/20 hover:bg-red-500/30 border border-red-400/40"
+                              title="Eliminar"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-300" />
+                            </button>
+                          </>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
