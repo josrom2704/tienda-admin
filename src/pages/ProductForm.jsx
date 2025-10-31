@@ -185,9 +185,11 @@ const ProductForm = () => {
       submitData.append('stock', formData.stock);
       submitData.append('floristeria', formData.floristeria);
       
-      // Enviar categorías múltiples si hay seleccionadas
+      // Enviar categorías múltiples correctamente (cada id como campo separado)
       if (selectedCategorias.length > 0) {
-        submitData.append('categorias', JSON.stringify(selectedCategorias));
+        selectedCategorias.forEach((catId) => {
+          submitData.append('categorias', catId);
+        });
       }
       
       if (formData.imagen) {
