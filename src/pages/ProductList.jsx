@@ -12,7 +12,6 @@ import {
   Gift, 
   CheckSquare, 
   Square,
-  AlertTriangle,
   Trash,
   CheckCircle,
   XCircle
@@ -50,21 +49,6 @@ export default function ProductList({ floristeriaId }) {
     }
   }, [floristeriaId, token]);
 
-  // Cargar productos cuando se selecciona una floristería
-  useEffect(() => {
-    if (selectedFloristeria) {
-      fetchProductos();
-    } else {
-      setProductos([]);
-    }
-  }, [selectedFloristeria, token]);
-
-  // Función para mostrar mensajes
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: '', text: '' }), 5000);
-  };
-
   // Función para cargar productos
   const fetchProductos = async () => {
     setLoading(true);
@@ -83,6 +67,21 @@ export default function ProductList({ floristeriaId }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Cargar productos cuando se selecciona una floristería
+  useEffect(() => {
+    if (selectedFloristeria) {
+      fetchProductos();
+    } else {
+      setProductos([]);
+    }
+  }, [selectedFloristeria]);
+
+  // Función para mostrar mensajes
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: '', text: '' }), 5000);
   };
 
   // Función para eliminar producto individual
@@ -263,36 +262,36 @@ export default function ProductList({ floristeriaId }) {
       {/* Header Glass */}
       <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-6 mb-8 border border-white/20 shadow-2xl">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-    <div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+          <div>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
               🌸 Arreglos Florales
             </h1>
-            <p className="text-purple-200 mt-2 text-lg">
+            <p className="text-purple-200 mt-2 text-base md:text-lg">
               Gestiona tu catálogo de arreglos elegantes
             </p>
           </div>
-        {selectedFloristeria && (
-          <Link
-            to={`nuevo?floristeria=${selectedFloristeria}`}
-              className="group relative inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-2xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-pink-500/25"
-          >
+          {selectedFloristeria && (
+            <Link
+              to={`nuevo?floristeria=${selectedFloristeria}`}
+              className="group relative inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-2xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-pink-500/25 w-full md:w-auto justify-center"
+            >
               <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
               Añadir Arreglo
-          </Link>
-        )}
+            </Link>
+          )}
         </div>
       </div>
 
       {/* Selector de Floristería Glass */}
       {!floristeriaId && (
         <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-6 mb-8 border border-white/20 shadow-xl">
-          <label className="block text-white/90 mb-3 text-lg font-medium">
+          <label className="block text-white/90 mb-3 text-base md:text-lg font-medium">
             🏪 Seleccionar Floristería
           </label>
           <select
             value={selectedFloristeria}
             onChange={(e) => setSelectedFloristeria(e.target.value)}
-            className="w-full bg-white/20 border border-white/30 text-white p-4 rounded-xl backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-300 placeholder-white/50"
+            className="w-full bg-white/20 border border-white/30 text-white p-4 rounded-xl backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-300 placeholder-white/50 text-base md:text-lg"
           >
             <option value="" className="text-gray-800">-- Seleccione una Floristería --</option>
             {floristerias.map((flo) => (
@@ -332,75 +331,12 @@ export default function ProductList({ floristeriaId }) {
               )}
             </div>
             
-            <div className="flex items-center gap-3">
-              {/* Botón de Test de Backend */}
-              <button
-                onClick={async () => {
-                  if (productos.length === 0) {
-                    showMessage('error', 'No hay productos para testear');
-                    return;
-                  }
-                  
-                  const testProduct = productos[0];
-                  console.log('🧪 TEST BACKEND - Producto:', testProduct);
-                  
-                  try {
-                    // Test 1: Verificar que el producto existe
-                    console.log('🧪 TEST 1: Verificando que el producto existe...');
-                    const getResponse = await api.get(`/flores/${testProduct._id}`);
-                    console.log('✅ Producto existe:', getResponse.data);
-                    
-                    // Test 2: Intentar eliminar
-                    console.log('🧪 TEST 2: Intentando eliminar...');
-                    const deleteResponse = await api.delete(`/flores/${testProduct._id}`);
-                    console.log('✅ Respuesta DELETE completa:', deleteResponse);
-                    console.log('📊 Status:', deleteResponse.status);
-                    console.log('📊 Headers:', deleteResponse.headers);
-                    console.log('📊 Data:', deleteResponse.data);
-                    
-                    // Test 3: Verificar si realmente se eliminó
-                    console.log('🧪 TEST 3: Verificando si se eliminó...');
-                    setTimeout(async () => {
-                      try {
-                        const verifyResponse = await api.get(`/flores/${testProduct._id}`);
-                        console.log('❌ PRODUCTO SIGUE EXISTIENDO:', verifyResponse.data);
-                        showMessage('error', 'PRODUCTO NO SE ELIMINÓ DEL BACKEND');
-                        
-                        // Test adicional: Intentar eliminar de nuevo
-                        console.log('🧪 TEST 4: Intentando eliminar de nuevo...');
-                        try {
-                          const secondDelete = await api.delete(`/flores/${testProduct._id}`);
-                          console.log('🔄 Segunda eliminación:', secondDelete.status);
-                        } catch (secondError) {
-                          console.log('🔄 Error en segunda eliminación:', secondError.response?.status);
-                        }
-                        
-                      } catch (verifyError) {
-                        if (verifyError.response?.status === 404) {
-                          console.log('✅ PRODUCTO ELIMINADO CORRECTAMENTE');
-                          showMessage('success', 'PRODUCTO ELIMINADO DEL BACKEND');
-                        } else {
-                          console.log('❌ Error verificando:', verifyError);
-                        }
-                      }
-                    }, 2000);
-                    
-                  } catch (error) {
-                    console.error('❌ TEST BACKEND FALLÓ:', error);
-                    console.error('❌ Error completo:', error.response || error);
-                    showMessage('error', `Test falló: ${error.message}`);
-                  }
-                }}
-                className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2 rounded-xl font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all duration-300"
-              >
-                🧪 Test Backend
-              </button>
-              
+            <div>
               {selectedProducts.size > 0 && (
                 <button
                   onClick={handleBulkDelete}
                   disabled={bulkDeleting}
-                  className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 md:px-6 md:py-3 rounded-xl font-semibold hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto justify-center"
                 >
                   {bulkDeleting ? (
                     <>

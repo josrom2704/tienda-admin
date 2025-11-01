@@ -1,12 +1,13 @@
 import { NavLink, Routes, Route } from 'react-router-dom';
+import { useState } from 'react';
 import { 
   Store, 
   Flower, 
   Users, 
   LogOut, 
   Home,
-  Plus,
-  Settings
+  Menu,
+  X
 } from 'lucide-react';
 import FloristeriaList from './FloristeriaList';
 import FloristeriaForm from './FloristeriaForm';
@@ -23,21 +24,42 @@ import { useAuth } from '../context/AuthContext';
  */
 export default function AdminDashboard() {
   const { logout, user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Overlay móvil */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
+      
       {/* Sidebar Glass Elegante */}
-      <aside className="w-72 backdrop-blur-xl bg-white/10 border-r border-white/20 shadow-2xl">
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-50
+        w-72 backdrop-blur-xl bg-white/10 border-r border-white/20 shadow-2xl
+        transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
         {/* Header del Sidebar */}
         <div className="p-6 border-b border-white/20">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl flex items-center justify-center">
               <Home className="w-6 h-6 text-white" />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-xl font-bold text-white">Panel Admin</h1>
               <p className="text-purple-200 text-sm">Gestión Completa</p>
             </div>
+            {/* Botón cerrar en móvil */}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
           </div>
         </div>
 
@@ -45,6 +67,7 @@ export default function AdminDashboard() {
         <nav className="p-4 space-y-2">
           <NavLink
             to="floristerias"
+            onClick={() => setSidebarOpen(false)}
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${
                 isActive 
@@ -62,6 +85,7 @@ export default function AdminDashboard() {
 
           <NavLink
             to="productos"
+            onClick={() => setSidebarOpen(false)}
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${
                 isActive 
@@ -79,6 +103,7 @@ export default function AdminDashboard() {
 
           <NavLink
             to="usuarios"
+            onClick={() => setSidebarOpen(false)}
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${
                 isActive 
@@ -139,6 +164,16 @@ export default function AdminDashboard() {
 
       {/* Contenido Principal */}
       <main className="flex-1 overflow-auto">
+        {/* Botón hamburguesa móvil */}
+        <div className="lg:hidden fixed top-4 left-4 z-30">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="bg-white/10 backdrop-blur-lg text-white p-3 rounded-xl hover:bg-white/20 transition-colors shadow-lg border border-white/20"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+        </div>
+        
         <Routes>
           <Route index element={
             <div className="min-h-screen flex items-center justify-center">
